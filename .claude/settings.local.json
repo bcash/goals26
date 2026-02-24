@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer create-project:*)",
+      "Bash(PGPASSWORD=\"\" psql:*)",
+      "Bash(composer require:*)",
+      "Bash(test:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(php artisan migrate:*)",
+      "Bash(php artisan db:seed:*)",
+      "Bash(php artisan migrate:fresh --seed --force)",
+      "Bash(php artisan cache:clear:*)",
+      "Bash(php artisan:*)",
+      "Bash(php artisan view:clear:*)",
+      "Bash(curl:*)",
+      "Bash(:)",
+      "Bash(php -r:*)",
+      "Bash(composer show:*)",
+      "WebFetch(domain:sevalla.com)",
+      "Bash(gtimeout 10 php:*)",
+      "Bash(printf:*)",
+      "Bash(python3:*)",
+      "WebFetch(domain:www.geocod.io)",
+      "Bash(ls:*)",
+      "Bash(xargs:*)",
+      "Bash(chmod:*)",
+      "Bash(CLAUDE_PROJECT_DIR=/Users/briancash/Herd/goals26 /Users/briancash/Herd/goals26/.claude/hooks/suggest-skills.sh:*)",
+      "Bash(CLAUDE_PROJECT_DIR=/Users/briancash/Herd/goals26 /Users/briancash/Herd/goals26/.claude/hooks/inject-task-context.sh:*)",
+      "Bash(/Users/briancash/Herd/goals26/.claude/hooks/remind-persist-context.sh)",
+      "mcp__laravel-boost__database-schema",
+      "Bash(vendor/bin/pint:*)",
+      "mcp__laravel-boost__list-available-env-vars",
+      "Bash(git status:*)",
+      "mcp__laravel-boost__database-query",
+      "mcp__laravel-boost__get-config",
+      "mcp__laravel-boost__tinker",
+      "WebFetch(domain:docs.granola.ai)"
+    ]
+  }
+}
