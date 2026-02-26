@@ -16,7 +16,7 @@ class MeetingAgenda extends Model
     protected $fillable = [
         'user_id',
         'project_id',
-        'client_meeting_id',
+        'meeting_note_id',
         'title',
         'client_type',
         'client_name',
@@ -27,11 +27,12 @@ class MeetingAgenda extends Model
         'status',
         'ai_suggested_topics',
         'notes',
+        'calendar_event_id',
     ];
 
     protected $casts = [
-        'scheduled_for'       => 'datetime',
-        'desired_outcomes'    => 'array',
+        'scheduled_for' => 'datetime',
+        'desired_outcomes' => 'array',
         'ai_suggested_topics' => 'array',
     ];
 
@@ -47,20 +48,25 @@ class MeetingAgenda extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function meeting(): BelongsTo
+    public function meetingNote(): BelongsTo
     {
-        return $this->belongsTo(ClientMeeting::class, 'client_meeting_id');
+        return $this->belongsTo(MeetingNote::class, 'meeting_note_id');
+    }
+
+    public function calendarEvent(): BelongsTo
+    {
+        return $this->belongsTo(CalendarEvent::class);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────
 
     public function previousMeetings(): Collection
     {
-        if (!$this->project_id) {
-            return new Collection();
+        if (! $this->project_id) {
+            return new Collection;
         }
 
-        return ClientMeeting::where('project_id', $this->project_id)
+        return MeetingNote::where('project_id', $this->project_id)
             ->where('meeting_date', '<', $this->scheduled_for ?? now())
             ->orderByDesc('meeting_date')
             ->get();
@@ -68,8 +74,8 @@ class MeetingAgenda extends Model
 
     public function openActionItems(): Collection
     {
-        if (!$this->project_id) {
-            return new Collection();
+        if (! $this->project_id) {
+            return new Collection;
         }
 
         return Task::where('project_id', $this->project_id)
@@ -80,8 +86,8 @@ class MeetingAgenda extends Model
 
     public function deferredItemsForReview(): Collection
     {
-        if (!$this->project_id) {
-            return new Collection();
+        if (! $this->project_id) {
+            return new Collection;
         }
 
         return DeferredItem::where('project_id', $this->project_id)

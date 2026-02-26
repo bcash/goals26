@@ -2,14 +2,31 @@
 
 namespace Database\Seeders;
 
-use App\Models\{
-    User, LifeArea, Goal, Milestone, Project, Task, Habit, HabitLog,
-    DailyPlan, TimeBlock, JournalEntry, WeeklyReview, AiInteraction,
-    ClientMeeting, MeetingScopeItem, MeetingDoneItem, MeetingResourceSignal,
-    MeetingAgenda, AgendaItem, TaskQualityGate, DeferredItem,
-    OpportunityPipeline, DeferralReview, ProjectBudget, TimeEntry
-};
-use Carbon\Carbon;
+use App\Models\AgendaItem;
+use App\Models\AiInteraction;
+use App\Models\DailyPlan;
+use App\Models\DeferralReview;
+use App\Models\DeferredItem;
+use App\Models\Goal;
+use App\Models\Habit;
+use App\Models\HabitLog;
+use App\Models\JournalEntry;
+use App\Models\LifeArea;
+use App\Models\MeetingAgenda;
+use App\Models\MeetingDoneItem;
+use App\Models\MeetingNote;
+use App\Models\MeetingResourceSignal;
+use App\Models\MeetingScopeItem;
+use App\Models\Milestone;
+use App\Models\OpportunityPipeline;
+use App\Models\Project;
+use App\Models\ProjectBudget;
+use App\Models\Task;
+use App\Models\TaskQualityGate;
+use App\Models\TimeBlock;
+use App\Models\TimeEntry;
+use App\Models\User;
+use App\Models\WeeklyReview;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -199,7 +216,7 @@ class DemoSeeder extends Seeder
                 'status' => $i === 0 ? 'done' : 'todo',
                 'priority' => 'medium',
                 'depth' => 1,
-                'path' => $parentTask->id . '/',
+                'path' => $parentTask->id.'/',
                 'is_leaf' => true,
                 'sort_order' => $i,
                 'due_date' => now()->addDays(rand(1, 14)),
@@ -220,7 +237,7 @@ class DemoSeeder extends Seeder
                 'status' => 'done',
                 'priority' => 'medium',
                 'depth' => 2,
-                'path' => $parentTask->id . '/' . $subParent->id . '/',
+                'path' => $parentTask->id.'/'.$subParent->id.'/',
                 'is_leaf' => true,
                 'sort_order' => $i,
             ]);
@@ -242,7 +259,7 @@ class DemoSeeder extends Seeder
                 'status' => 'done',
                 'priority' => 'medium',
                 'depth' => 1,
-                'path' => $moodBoard->id . '/',
+                'path' => $moodBoard->id.'/',
                 'is_leaf' => true,
                 'sort_order' => $i,
             ]);
@@ -262,7 +279,7 @@ class DemoSeeder extends Seeder
                 'status' => $i === 0 ? 'done' : ($i === 1 ? 'in-progress' : 'todo'),
                 'priority' => 'high',
                 'depth' => 1,
-                'path' => $logoTask->id . '/',
+                'path' => $logoTask->id.'/',
                 'is_leaf' => true,
                 'sort_order' => $i,
                 'time_estimate_minutes' => [60, 120, 90][$i],
@@ -281,7 +298,7 @@ class DemoSeeder extends Seeder
                 'status' => $i === 0 ? 'done' : 'in-progress',
                 'priority' => 'high',
                 'depth' => 2,
-                'path' => $logoTask->id . '/' . $digitalDrafts->id . '/',
+                'path' => $logoTask->id.'/'.$digitalDrafts->id.'/',
                 'is_leaf' => true,
                 'sort_order' => $i,
                 'time_estimate_minutes' => 90,
@@ -302,7 +319,7 @@ class DemoSeeder extends Seeder
                 'status' => 'done',
                 'priority' => 'critical',
                 'depth' => 1,
-                'path' => $dbSchema->id . '/',
+                'path' => $dbSchema->id.'/',
                 'is_leaf' => true,
                 'sort_order' => $i,
             ]);
@@ -322,7 +339,7 @@ class DemoSeeder extends Seeder
                 'status' => $i < 2 ? 'done' : ($i === 2 ? 'in-progress' : 'todo'),
                 'priority' => 'critical',
                 'depth' => 1,
-                'path' => $authTask->id . '/',
+                'path' => $authTask->id.'/',
                 'is_leaf' => true,
                 'sort_order' => $i,
                 'time_estimate_minutes' => [120, 180, 90, 120][$i],
@@ -341,7 +358,7 @@ class DemoSeeder extends Seeder
                 'status' => 'done',
                 'priority' => 'high',
                 'depth' => 2,
-                'path' => $authTask->id . '/' . $oauthTask->id . '/',
+                'path' => $authTask->id.'/'.$oauthTask->id.'/',
                 'is_leaf' => true,
                 'sort_order' => $i,
             ]);
@@ -360,7 +377,7 @@ class DemoSeeder extends Seeder
                 'status' => 'done',
                 'priority' => 'high',
                 'depth' => 1,
-                'path' => $contractorTask->id . '/',
+                'path' => $contractorTask->id.'/',
                 'is_leaf' => true,
                 'sort_order' => $i,
             ]);
@@ -451,7 +468,7 @@ class DemoSeeder extends Seeder
                 'energy_rating' => $d === 0 ? null : rand(2, 5),
                 'focus_rating' => $d === 0 ? null : rand(2, 5),
                 'progress_rating' => $d === 0 ? null : rand(2, 5),
-                'evening_reflection' => $d === 0 ? null : 'Productive day overall. ' . ['Made good progress on key tasks.', 'Some interruptions but recovered well.', 'Need to improve focus tomorrow.', 'Great flow state in the morning.'][$d % 4],
+                'evening_reflection' => $d === 0 ? null : 'Productive day overall. '.['Made good progress on key tasks.', 'Some interruptions but recovered well.', 'Need to improve focus tomorrow.', 'Great flow state in the morning.'][$d % 4],
                 'status' => $d === 0 ? 'active' : 'reviewed',
             ]);
             $dailyPlans[] = $plan;
@@ -463,14 +480,16 @@ class DemoSeeder extends Seeder
             $hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
             $numBlocks = rand(4, 7);
             for ($b = 0; $b < $numBlocks; $b++) {
-                if (!isset($hours[$b])) break;
+                if (! isset($hours[$b])) {
+                    break;
+                }
                 $start = $hours[$b];
                 $duration = rand(1, 2);
                 $type = $blockTypes[rand(0, 4)];
                 TimeBlock::create([
                     'daily_plan_id' => $plan->id,
                     'task_id' => rand(0, 1) ? $tasks[rand(0, min(20, count($tasks) - 1))]->id : null,
-                    'title' => match($type) {
+                    'title' => match ($type) {
                         'deep-work' => ['Design work', 'Coding session', 'Writing', 'Research'][rand(0, 3)],
                         'meeting' => ['Client standup', 'Team sync', 'Review meeting', '1-on-1'][rand(0, 3)],
                         'admin' => ['Email', 'Invoicing', 'Planning', 'Organizing'][rand(0, 3)],
@@ -480,7 +499,7 @@ class DemoSeeder extends Seeder
                     'block_type' => $type,
                     'start_time' => sprintf('%02d:00', $start),
                     'end_time' => sprintf('%02d:00', $start + $duration),
-                    'color_hex' => match($type) {
+                    'color_hex' => match ($type) {
                         'deep-work' => '#3B82F6',
                         'meeting' => '#9333EA',
                         'admin' => '#6B7280',
@@ -534,14 +553,14 @@ class DemoSeeder extends Seeder
                 'user_id' => $userId,
                 'daily_plan_id' => $dailyPlans[$a % count($dailyPlans)]->id,
                 'interaction_type' => $aiTypes[$a % count($aiTypes)],
-                'prompt' => 'Generate a ' . $aiTypes[$a % count($aiTypes)] . ' for today',
-                'response' => 'Here is your personalized ' . $aiTypes[$a % count($aiTypes)] . ': Focus on high-impact work today. Your energy is best in the morning - tackle the Acme redesign first.',
+                'prompt' => 'Generate a '.$aiTypes[$a % count($aiTypes)].' for today',
+                'response' => 'Here is your personalized '.$aiTypes[$a % count($aiTypes)].': Focus on high-impact work today. Your energy is best in the morning - tackle the Acme redesign first.',
                 'model_used' => 'claude-3-sonnet',
                 'tokens_used' => rand(200, 800),
             ]);
         }
 
-        // ── Client Meetings ───────────────────────────────────────────
+        // ── Meeting Notes ─────────────────────────────────────────────
         $meetings = [];
         // DB: title (required), meeting_date (date),
         // meeting_type enum: discovery/requirements/check-in/brainstorm/review/planning/retrospective/handoff/other
@@ -554,7 +573,7 @@ class DemoSeeder extends Seeder
         ];
 
         foreach ($meetingData as [$proj, $clientType, $meetingType, $title, $summary]) {
-            $meetings[] = ClientMeeting::create([
+            $meetings[] = MeetingNote::create([
                 'user_id' => $userId,
                 'project_id' => $proj->id,
                 'client_type' => $clientType,
@@ -584,7 +603,7 @@ class DemoSeeder extends Seeder
                     'meeting_id' => $meeting->id,
                     'type' => $scopeTypes[rand(0, 4)],
                     'description' => ['Homepage redesign with responsive layout', 'Mobile app development', 'SEO optimization for launch', 'API integration with CRM', 'Brand color palette finalization'][$s % 5],
-                    'confirmed_with_client' => (bool)rand(0, 1),
+                    'confirmed_with_client' => (bool) rand(0, 1),
                     'notes' => 'Discussed during the meeting and agreed upon.',
                 ]);
             }
@@ -624,7 +643,7 @@ class DemoSeeder extends Seeder
                 'resource_type' => $signalTypes[$r],
                 'description' => ['Client mentioned potential budget increase for Q2', 'Timeline shifted to accommodate new requirements', 'Need to evaluate new design tool', 'May need additional developer resources'][$r],
                 'client_quote' => '"We might have additional budget available next quarter"',
-                'creates_revisit_opportunity' => (bool)rand(0, 1),
+                'creates_revisit_opportunity' => (bool) rand(0, 1),
             ]);
         }
 
@@ -633,7 +652,7 @@ class DemoSeeder extends Seeder
             $agenda = MeetingAgenda::create([
                 'user_id' => $userId,
                 'project_id' => $projects[$ag]->id,
-                'client_meeting_id' => $meetings[$ag]->id,
+                'meeting_note_id' => $meetings[$ag]->id,
                 'title' => "Agenda for {$projects[$ag]->name} meeting",
                 'client_type' => $ag < 2 ? 'external' : 'self',
                 'client_name' => $projects[$ag]->client_name,
@@ -715,7 +734,7 @@ class DemoSeeder extends Seeder
                 'user_id' => $userId,
                 'deferred_item_id' => $deferredItems[$o]->id,
                 'project_id' => $projects[$o % count($projects)]->id,
-                'title' => $deferredItems[$o]->title . ' - Opportunity',
+                'title' => $deferredItems[$o]->title.' - Opportunity',
                 'client_name' => $projects[$o % count($projects)]->client_name ?? 'Personal',
                 'stage' => $stages[$o],
                 'estimated_value' => $deferredItems[$o]->estimated_value,
@@ -782,16 +801,17 @@ class DemoSeeder extends Seeder
             "Today was a productive day. I managed to complete the homepage mockups for Acme and got positive feedback. The morning meditation really helped set the tone.\n\nKey insight: When I start the day with intention, everything flows better.",
             "Grateful for:\n1. A supportive partner who understands my work schedule\n2. The beautiful weather that motivated my morning run\n3. A breakthrough moment on the SaaS authentication design",
             "Lesson learned: Don't try to multitask during deep work sessions. I noticed my quality drops significantly when I switch between coding and responding to messages.",
-            "New idea: What if we offered a design audit as a productized service? Could charge a flat rate and deliver a comprehensive report. Need to think about pricing and scope.",
-            "Stream of consciousness morning pages. Feeling energized today. Had a great workout. Thinking about the upcoming client meeting with Riverside Studio. Need to prepare the logo concepts presentation.",
+            'New idea: What if we offered a design audit as a productized service? Could charge a flat rate and deliver a comprehensive report. Need to think about pricing and scope.',
+            'Stream of consciousness morning pages. Feeling energized today. Had a great workout. Thinking about the upcoming client meeting with Riverside Studio. Need to prepare the logo concepts presentation.',
             "Reflecting on this week's progress. The Acme project is on track, but I need to allocate more time to the SaaS MVP. Maybe I can shift some afternoon blocks.",
             "Gratitude journal: The small wins matter. Completed a 45-day meditation streak today. It doesn't seem like much, but consistency is the foundation of all progress.",
-            "Had an interesting conversation about remote work and productivity. Key takeaway: environment design matters more than willpower.",
-            "Brainstorming session for the newsletter. Topics: design systems, freelancer productivity, client communication frameworks.",
-            "Weekly reflection: Good week overall. Met most of my targets. Need to improve evening routine - too much screen time before bed.",
+            'Had an interesting conversation about remote work and productivity. Key takeaway: environment design matters more than willpower.',
+            'Brainstorming session for the newsletter. Topics: design systems, freelancer productivity, client communication frameworks.',
+            'Weekly reflection: Good week overall. Met most of my targets. Need to improve evening routine - too much screen time before bed.',
             "The power of saying no. Turned down a project that didn't align with my goals. Felt uncomfortable but right.",
-            "Morning pages: dreaming about the next phase of the business. What would it look like to have 2-3 ongoing retainer clients?",
+            'Morning pages: dreaming about the next phase of the business. What would it look like to have 2-3 ongoing retainer clients?',
         ];
+
         return $contents[$index % count($contents)];
     }
 
@@ -811,6 +831,7 @@ class DemoSeeder extends Seeder
             ['boundaries', 'business'],
             ['morning-pages', 'vision'],
         ];
+
         return $tagSets[$index % count($tagSets)];
     }
 
@@ -828,6 +849,7 @@ class DemoSeeder extends Seeder
             'morning meditation streak',
             'family dinner streak',
         ];
+
         return $wins[rand(0, count($wins) - 1)];
     }
 }

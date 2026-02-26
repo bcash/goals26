@@ -37,7 +37,9 @@
       "mcp__laravel-boost__tinker",
       "WebFetch(domain:docs.granola.ai)",
       "mcp__laravel-boost__search-docs",
-      "WebFetch(domain:mcp.granola.ai)"
+      "WebFetch(domain:mcp.granola.ai)",
+      "WebFetch(domain:filamentphp.com)",
+      "mcp__herd__get_site_information"
     ]
   }
 }

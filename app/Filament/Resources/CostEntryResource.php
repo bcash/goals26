@@ -4,28 +4,39 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CostEntryResource\Pages;
 use App\Models\CostEntry;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, TextInput, Select, DatePicker, Toggle
-};
-use Filament\Tables\Columns\{TextColumn, IconColumn};
-use Filament\Tables\Filters\{SelectFilter, TernaryFilter};
-use Filament\Tables\Actions\{EditAction, DeleteAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
 
 class CostEntryResource extends Resource
 {
     protected static ?string $model = CostEntry::class;
-    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    protected static ?string $navigationGroup = 'Goals & Projects';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Goals & Projects';
+
     protected static ?string $navigationLabel = 'Cost Entries';
+
     protected static ?int $navigationSort = 11;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Cost Entry')->schema([
                 Grid::make(2)->schema([
                     Select::make('project_id')
@@ -58,11 +69,11 @@ class CostEntryResource extends Resource
                 Grid::make(3)->schema([
                     Select::make('category')
                         ->options([
-                            'labour'         => 'Labour',
-                            'compute'        => 'Compute',
+                            'labour' => 'Labour',
+                            'compute' => 'Compute',
                             'infrastructure' => 'Infrastructure',
-                            'license'        => 'License',
-                            'other'          => 'Other',
+                            'license' => 'License',
+                            'other' => 'Other',
                         ])
                         ->required()
                         ->default('labour')
@@ -142,21 +153,21 @@ class CostEntryResource extends Resource
                 TextColumn::make('category')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'labour'         => 'info',
-                        'compute'        => 'warning',
+                        'labour' => 'info',
+                        'compute' => 'warning',
                         'infrastructure' => 'success',
-                        'license'        => 'primary',
-                        default          => 'gray',
+                        'license' => 'primary',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('amount_cents')
                     ->label('Amount')
                     ->formatStateUsing(function ($state) {
                         if ($state instanceof \Money\Money) {
-                            return '$' . number_format((int) $state->getAmount() / 100, 2);
+                            return '$'.number_format((int) $state->getAmount() / 100, 2);
                         }
 
-                        return $state !== null ? '$' . number_format($state / 100, 2) : '—';
+                        return $state !== null ? '$'.number_format($state / 100, 2) : '—';
                     })
                     ->sortable()
                     ->alignEnd(),
@@ -186,11 +197,11 @@ class CostEntryResource extends Resource
 
                 SelectFilter::make('category')
                     ->options([
-                        'labour'         => 'Labour',
-                        'compute'        => 'Compute',
+                        'labour' => 'Labour',
+                        'compute' => 'Compute',
                         'infrastructure' => 'Infrastructure',
-                        'license'        => 'License',
-                        'other'          => 'Other',
+                        'license' => 'License',
+                        'other' => 'Other',
                     ]),
 
                 TernaryFilter::make('billable')
@@ -208,9 +219,9 @@ class CostEntryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListCostEntries::route('/'),
+            'index' => Pages\ListCostEntries::route('/'),
             'create' => Pages\CreateCostEntry::route('/create'),
-            'edit'   => Pages\EditCostEntry::route('/{record}/edit'),
+            'edit' => Pages\EditCostEntry::route('/{record}/edit'),
         ];
     }
 }

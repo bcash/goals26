@@ -6,15 +6,17 @@ use App\Models\DailyPlan;
 use App\Models\Habit;
 use App\Models\HabitLog;
 use App\Services\HabitStreakService;
-use Livewire\Attributes\On;
 
 class MorningChecklistWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
-    protected int | string | array $columnSpan = 2;
-    protected static string $view = 'filament.widgets.morning-checklist-widget';
+
+    protected int|string|array $columnSpan = 2;
+
+    protected string $view = 'filament.widgets.morning-checklist-widget';
 
     public ?DailyPlan $plan = null;
+
     public array $habitStatuses = [];
 
     public function mount(): void

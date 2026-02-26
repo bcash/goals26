@@ -4,25 +4,37 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MeetingDoneItemResource\Pages;
 use App\Models\MeetingDoneItem;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Forms\Components\{Section, Grid, TextInput, Textarea, Select, Toggle};
-use Filament\Tables\Columns\{TextColumn, IconColumn};
-use Filament\Tables\Actions\{EditAction, DeleteAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
 
 class MeetingDoneItemResource extends Resource
 {
     protected static ?string $model = MeetingDoneItem::class;
-    protected static ?string $navigationIcon = 'heroicon-o-check-badge';
-    protected static ?string $navigationGroup = 'Goals & Projects';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-check-badge';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Goals & Projects';
+
     protected static ?string $navigationLabel = 'Done & Delivered';
+
     protected static ?int $navigationSort = 11;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Done Item')->schema([
                 Select::make('meeting_id')
                     ->label('Client Meeting')
@@ -106,9 +118,9 @@ class MeetingDoneItemResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListMeetingDoneItems::route('/'),
+            'index' => Pages\ListMeetingDoneItems::route('/'),
             'create' => Pages\CreateMeetingDoneItem::route('/create'),
-            'edit'   => Pages\EditMeetingDoneItem::route('/{record}/edit'),
+            'edit' => Pages\EditMeetingDoneItem::route('/{record}/edit'),
         ];
     }
 }

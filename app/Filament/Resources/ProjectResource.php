@@ -6,26 +6,40 @@ use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Filament\Support\LifeAreaBadge;
 use App\Models\Project;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{Section, Grid, TextInput, Textarea, Select, DatePicker, ColorPicker};
-use Filament\Tables\Columns\{TextColumn, ColorColumn};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\ColorColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Actions\{EditAction, DeleteAction, ViewAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
+use Filament\Tables\Table;
 
 class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
-    protected static ?string $navigationIcon = 'heroicon-o-briefcase';
-    protected static ?string $navigationGroup = 'Goals & Projects';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-briefcase';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Goals & Projects';
+
     protected static ?string $navigationLabel = 'Projects';
+
     protected static ?int $navigationSort = 3;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Project Details')->schema([
                 TextInput::make('name')
                     ->required()
@@ -51,8 +65,8 @@ class ProjectResource extends Resource
                 Grid::make(3)->schema([
                     Select::make('status')
                         ->options([
-                            'active'   => 'Active',
-                            'on-hold'  => 'On Hold',
+                            'active' => 'Active',
+                            'on-hold' => 'On Hold',
                             'complete' => 'Complete',
                             'archived' => 'Archived',
                         ])
@@ -154,11 +168,11 @@ class ProjectResource extends Resource
                 TextColumn::make('client_name')->label('Client')->placeholder('Personal')->color('gray'),
                 TextColumn::make('status')->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'active'   => 'success',
-                        'on-hold'  => 'warning',
+                        'active' => 'success',
+                        'on-hold' => 'warning',
                         'complete' => 'info',
                         'archived' => 'gray',
-                        default    => 'gray',
+                        default => 'gray',
                     }),
                 TextColumn::make('due_date')->date('M j, Y')->sortable(),
             ])
@@ -187,10 +201,10 @@ class ProjectResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListProjects::route('/'),
+            'index' => Pages\ListProjects::route('/'),
             'create' => Pages\CreateProject::route('/create'),
-            'view'   => Pages\ViewProject::route('/{record}'),
-            'edit'   => Pages\EditProject::route('/{record}/edit'),
+            'view' => Pages\ViewProject::route('/{record}'),
+            'edit' => Pages\EditProject::route('/{record}/edit'),
         ];
     }
 }

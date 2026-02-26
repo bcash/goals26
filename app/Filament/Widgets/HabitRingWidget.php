@@ -8,8 +8,10 @@ use Livewire\Attributes\On;
 class HabitRingWidget extends BaseWidget
 {
     protected static ?int $sort = 5;
-    protected int | string | array $columnSpan = 1;
-    protected static string $view = 'filament.widgets.habit-ring-widget';
+
+    protected int|string|array $columnSpan = 1;
+
+    protected string $view = 'filament.widgets.habit-ring-widget';
 
     #[On('habit-logged')]
     public function refresh(): void

@@ -4,28 +4,37 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\JournalEntryResource\Pages;
 use App\Models\JournalEntry;
-use Filament\Forms\Form;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, Select, DatePicker,
-    MarkdownEditor, Placeholder, TagsInput
-};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Actions\{EditAction, DeleteAction, ViewAction};
+use Filament\Tables\Table;
 
 class JournalEntryResource extends Resource
 {
     protected static ?string $model = JournalEntry::class;
-    protected static ?string $navigationIcon = 'heroicon-o-book-open';
-    protected static ?string $navigationGroup = 'Journal';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Journal';
+
     protected static ?string $navigationLabel = 'Journal';
+
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make()->schema([
                 Grid::make(3)->schema([
                     DatePicker::make('entry_date')
@@ -34,9 +43,9 @@ class JournalEntryResource extends Resource
 
                     Select::make('entry_type')
                         ->options([
-                            'morning'  => 'Morning',
-                            'evening'  => 'Evening',
-                            'weekly'   => 'Weekly',
+                            'morning' => 'Morning',
+                            'evening' => 'Evening',
+                            'weekly' => 'Weekly',
                             'freeform' => 'Freeform',
                         ])
                         ->default('freeform')
@@ -88,11 +97,11 @@ class JournalEntryResource extends Resource
                 TextColumn::make('entry_type')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'morning'  => 'warning',
-                        'evening'  => 'info',
-                        'weekly'   => 'success',
+                        'morning' => 'warning',
+                        'evening' => 'info',
+                        'weekly' => 'success',
                         'freeform' => 'gray',
-                        default    => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('mood')
@@ -121,10 +130,10 @@ class JournalEntryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListJournalEntries::route('/'),
+            'index' => Pages\ListJournalEntries::route('/'),
             'create' => Pages\CreateJournalEntry::route('/create'),
-            'view'   => Pages\ViewJournalEntry::route('/{record}'),
-            'edit'   => Pages\EditJournalEntry::route('/{record}/edit'),
+            'view' => Pages\ViewJournalEntry::route('/{record}'),
+            'edit' => Pages\EditJournalEntry::route('/{record}/edit'),
         ];
     }
 }

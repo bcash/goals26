@@ -7,8 +7,10 @@ use App\Models\Goal;
 class GoalProgressWidget extends BaseWidget
 {
     protected static ?int $sort = 4;
-    protected int | string | array $columnSpan = 2;
-    protected static string $view = 'filament.widgets.goal-progress-widget';
+
+    protected int|string|array $columnSpan = 2;
+
+    protected string $view = 'filament.widgets.goal-progress-widget';
 
     public function getViewData(): array
     {

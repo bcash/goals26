@@ -9,8 +9,10 @@ use Livewire\Attributes\On;
 class StreakHighlightsWidget extends BaseWidget
 {
     protected static ?int $sort = 7;
-    protected int | string | array $columnSpan = 1;
-    protected static string $view = 'filament.widgets.streak-highlights-widget';
+
+    protected int|string|array $columnSpan = 1;
+
+    protected string $view = 'filament.widgets.streak-highlights-widget';
 
     #[On('habit-logged')]
     public function refresh(): void

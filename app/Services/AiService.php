@@ -31,7 +31,7 @@ class AiService
             $plan->priority1?->title,
             $plan->priority2?->title,
             $plan->priority3?->title,
-        ])->filter()->map(fn ($t, $i) => ($i + 1) . ". {$t}")->join("\n");
+        ])->filter()->map(fn ($t, $i) => ($i + 1).". {$t}")->join("\n");
 
         $prompt = <<<PROMPT
 You are a personal productivity coach writing a morning intention for today.
@@ -64,6 +64,8 @@ PROMPT;
      */
     public function generateGoalBreakdown(Goal $goal): string
     {
+        $targetDate = $goal->target_date?->format('M j, Y') ?? 'Not set';
+
         $prompt = <<<PROMPT
 You are a strategic planning advisor. Break down this goal into actionable milestones.
 
@@ -71,7 +73,7 @@ GOAL: "{$goal->title}"
 LIFE AREA: {$goal->lifeArea?->name}
 HORIZON: {$goal->horizon}
 WHY: {$goal->why}
-TARGET DATE: {$goal->target_date?->format('M j, Y') ?? 'Not set'}
+TARGET DATE: {$targetDate}
 DESCRIPTION: {$goal->description}
 
 Create a structured breakdown:
@@ -106,16 +108,17 @@ PROMPT;
             ->orderBy('priority', 'desc')
             ->limit(10)
             ->get()
-            ->map(fn ($t) => "- [{$t->priority}] {$t->title}" . ($t->due_date ? " (due: {$t->due_date->format('M j')})" : ''))
+            ->map(fn ($t) => "- [{$t->priority}] {$t->title}".($t->due_date ? " (due: {$t->due_date->format('M j')})" : ''))
             ->join("\n");
 
         $dayOfWeek = now()->format('l');
+        $today = now()->format('F j, Y');
 
         $prompt = <<<PROMPT
 You are a daily planning assistant. Create a focused plan for today.
 
 USER: {$user->name}
-DAY: {$dayOfWeek}, {$today = now()->format('F j, Y')}
+DAY: {$dayOfWeek}, {$today}
 
 ACTIVE GOALS:
 {$activeGoals}
@@ -264,20 +267,23 @@ PROMPT;
         $doneCount = $project->tasks()->where('status', 'done')->count();
         $deferredCount = $project->tasks()->where('status', 'deferred')->count();
 
+        $dueDate = $project->due_date?->format('M j, Y') ?? 'Not set';
+        $inProgress = $taskCount - $doneCount - $deferredCount;
+
         $prompt = <<<PROMPT
 You are a project resource analyst. Assess the resource readiness for this project.
 
 PROJECT: {$project->name}
 STATUS: {$project->status}
 CLIENT: {$project->client_name}
-DUE DATE: {$project->due_date?->format('M j, Y') ?? 'Not set'}
+DUE DATE: {$dueDate}
 DESCRIPTION: {$project->description}
 
 TASK METRICS:
 - Total tasks: {$taskCount}
 - Completed: {$doneCount}
 - Deferred: {$deferredCount}
-- In progress or pending: {$inProgress = $taskCount - $doneCount - $deferredCount}
+- In progress or pending: {$inProgress}
 
 Assess:
 1. Is this project on track given the task completion rate?
@@ -295,7 +301,7 @@ PROMPT;
      * Analyze a meeting transcript and extract structured intelligence.
      * Used by MeetingIntelligenceService.
      */
-    public function analyzeMeetingScope(\App\Models\ClientMeeting $meeting): string
+    public function analyzeMeetingScope(\App\Models\MeetingNote $meeting): string
     {
         $prompt = <<<PROMPT
 Analyze the following client meeting transcript and extract scope intelligence.
@@ -464,7 +470,7 @@ PROMPT;
     private function simulateMorningIntention(): string
     {
         $intentions = [
-            "Today is about depth over breadth. Your top priorities align with your bigger creative vision -- give them the focused attention they deserve. Let the smaller tasks wait until the afternoon when your energy naturally shifts to execution mode.",
+            'Today is about depth over breadth. Your top priorities align with your bigger creative vision -- give them the focused attention they deserve. Let the smaller tasks wait until the afternoon when your energy naturally shifts to execution mode.',
             "This morning, anchor yourself in your 'why.' The tasks on your plate today aren't just items to check off -- they're building blocks toward the life you're designing. Start with the hardest priority first while your focus is sharp.",
             "Today's theme calls you to balance ambition with presence. Your priorities are well-chosen -- tackle them in order and trust that consistent daily action compounds into remarkable progress over time.",
         ];

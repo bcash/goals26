@@ -2,22 +2,31 @@
 
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\{TextInput, Grid, Select, DatePicker, Toggle};
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\{TextColumn, IconColumn};
-use Filament\Tables\Filters\{SelectFilter, TernaryFilter};
-use Filament\Tables\Actions\{EditAction, DeleteAction, CreateAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
 
 class CostEntriesRelationManager extends RelationManager
 {
     protected static string $relationship = 'costEntries';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             TextInput::make('description')
                 ->required()
                 ->maxLength(255)
@@ -26,11 +35,11 @@ class CostEntriesRelationManager extends RelationManager
             Grid::make(3)->schema([
                 Select::make('category')
                     ->options([
-                        'labour'         => 'Labour',
-                        'compute'        => 'Compute',
+                        'labour' => 'Labour',
+                        'compute' => 'Compute',
                         'infrastructure' => 'Infrastructure',
-                        'license'        => 'License',
-                        'other'          => 'Other',
+                        'license' => 'License',
+                        'other' => 'Other',
                     ])
                     ->required()
                     ->default('labour')
@@ -85,21 +94,21 @@ class CostEntriesRelationManager extends RelationManager
                 TextColumn::make('category')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'labour'         => 'info',
-                        'compute'        => 'warning',
+                        'labour' => 'info',
+                        'compute' => 'warning',
                         'infrastructure' => 'success',
-                        'license'        => 'primary',
-                        default          => 'gray',
+                        'license' => 'primary',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('amount_cents')
                     ->label('Amount')
                     ->formatStateUsing(function ($state) {
                         if ($state instanceof \Money\Money) {
-                            return '$' . number_format((int) $state->getAmount() / 100, 2);
+                            return '$'.number_format((int) $state->getAmount() / 100, 2);
                         }
 
-                        return $state !== null ? '$' . number_format($state / 100, 2) : '—';
+                        return $state !== null ? '$'.number_format($state / 100, 2) : '—';
                     })
                     ->sortable()
                     ->alignEnd(),
@@ -125,11 +134,11 @@ class CostEntriesRelationManager extends RelationManager
             ->filters([
                 SelectFilter::make('category')
                     ->options([
-                        'labour'         => 'Labour',
-                        'compute'        => 'Compute',
+                        'labour' => 'Labour',
+                        'compute' => 'Compute',
                         'infrastructure' => 'Infrastructure',
-                        'license'        => 'License',
-                        'other'          => 'Other',
+                        'license' => 'License',
+                        'other' => 'Other',
                     ]),
 
                 TernaryFilter::make('billable')

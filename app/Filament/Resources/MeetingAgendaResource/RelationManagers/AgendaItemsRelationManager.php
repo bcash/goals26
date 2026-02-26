@@ -2,33 +2,36 @@
 
 namespace App\Filament\Resources\MeetingAgendaResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Components\{TextInput, Grid, Select, Textarea};
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\{EditAction, DeleteAction, CreateAction};
+use Filament\Tables\Table;
 
 class AgendaItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             TextInput::make('title')->required()->columnSpanFull(),
 
             Grid::make(2)->schema([
                 Select::make('item_type')
                     ->options([
-                        'topic'           => 'Topic',
+                        'topic' => 'Topic',
                         'action-followup' => 'Action Follow-up',
                         'deferred-review' => 'Deferred Review',
-                        'decision'        => 'Decision',
-                        'new-business'    => 'New Business',
-                        'budget-check'    => 'Budget Check',
+                        'decision' => 'Decision',
+                        'new-business' => 'New Business',
+                        'budget-check' => 'Budget Check',
                     ])
                     ->default('topic')
                     ->required(),
@@ -47,11 +50,11 @@ class AgendaItemsRelationManager extends RelationManager
             Grid::make(2)->schema([
                 Select::make('status')
                     ->options([
-                        'pending'   => 'Pending',
+                        'pending' => 'Pending',
                         'discussed' => 'Discussed',
-                        'deferred'  => 'Deferred',
-                        'resolved'  => 'Resolved',
-                        'skipped'   => 'Skipped',
+                        'deferred' => 'Deferred',
+                        'resolved' => 'Resolved',
+                        'skipped' => 'Skipped',
                     ])
                     ->default('pending'),
 
@@ -78,23 +81,23 @@ class AgendaItemsRelationManager extends RelationManager
                 TextColumn::make('title')->searchable()->wrap(),
                 TextColumn::make('item_type')->label('Type')->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'topic'           => 'primary',
+                        'topic' => 'primary',
                         'action-followup' => 'warning',
                         'deferred-review' => 'info',
-                        'decision'        => 'success',
-                        'new-business'    => 'gray',
-                        'budget-check'    => 'danger',
-                        default           => 'gray',
+                        'decision' => 'success',
+                        'new-business' => 'gray',
+                        'budget-check' => 'danger',
+                        default => 'gray',
                     }),
                 TextColumn::make('time_allocation_minutes')->label('Mins')->alignCenter(),
                 TextColumn::make('status')->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'pending'   => 'gray',
+                        'pending' => 'gray',
                         'discussed' => 'info',
-                        'deferred'  => 'warning',
-                        'resolved'  => 'success',
-                        'skipped'   => 'danger',
-                        default     => 'gray',
+                        'deferred' => 'warning',
+                        'resolved' => 'success',
+                        'skipped' => 'danger',
+                        default => 'gray',
                     }),
             ])
             ->defaultSort('sort_order')

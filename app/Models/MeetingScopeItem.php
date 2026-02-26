@@ -27,9 +27,9 @@ class MeetingScopeItem extends Model
 
     // ── Relationships ─────────────────────────────────────────────────
 
-    public function clientMeeting(): BelongsTo
+    public function meetingNote(): BelongsTo
     {
-        return $this->belongsTo(ClientMeeting::class, 'meeting_id');
+        return $this->belongsTo(MeetingNote::class, 'meeting_id');
     }
 
     public function task(): BelongsTo

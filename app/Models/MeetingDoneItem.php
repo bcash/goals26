@@ -29,15 +29,15 @@ class MeetingDoneItem extends Model
 
     protected $casts = [
         'save_as_testimonial' => 'boolean',
-        'save_for_portfolio'  => 'boolean',
+        'save_for_portfolio' => 'boolean',
         'save_for_case_study' => 'boolean',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────
 
-    public function meeting(): BelongsTo
+    public function meetingNote(): BelongsTo
     {
-        return $this->belongsTo(ClientMeeting::class, 'meeting_id');
+        return $this->belongsTo(MeetingNote::class, 'meeting_id');
     }
 
     public function task(): BelongsTo

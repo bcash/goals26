@@ -8,8 +8,10 @@ use App\Models\TimeBlock;
 class TimeBlockTimelineWidget extends BaseWidget
 {
     protected static ?int $sort = 3;
-    protected int | string | array $columnSpan = 1;
-    protected static string $view = 'filament.widgets.time-block-timeline-widget';
+
+    protected int|string|array $columnSpan = 1;
+
+    protected string $view = 'filament.widgets.time-block-timeline-widget';
 
     public function getViewData(): array
     {

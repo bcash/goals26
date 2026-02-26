@@ -2,12 +2,13 @@
 
 ## Project Overview
 
-Solas Rún is a personal operating system built on Laravel 12, Filament v3, and PostgreSQL 15+. It manages goals, projects, tasks (hierarchical tree), habits, daily plans, journal entries, weekly reviews, client meetings, deferred items, opportunity pipeline, and budgets across 6 life areas.
+Solas Rún is a personal operating system built on Laravel 12, Filament v5, and PostgreSQL 15+. It manages goals, projects, tasks (hierarchical tree), habits, daily plans, journal entries, weekly reviews, meeting notes, calendar events, deferred items, opportunity pipeline, and budgets across 6 life areas.
 
 - **URL**: https://goals26.test (Laravel Herd)
 - **Database**: PostgreSQL on port 5468, user `postgres`, database `solas_run`
-- **Admin Panel**: Filament v3 at `/admin`
-- **MCP Servers**: `laravel-boost` (Boost tools) + `solas-run` (25 model read/write access)
+- **Admin Panel**: Filament v5 at `/admin`
+- **Testing**: Pest v4 (PHPUnit 12) + Playwright browser testing
+- **MCP Servers**: `laravel-boost` (Boost tools) + `solas-run` (34 model read/write access)
 
 ## Development Philosophy: Think First, Code Second
 
@@ -34,7 +35,8 @@ For non-trivial features, use plan mode to:
 - Implement step by step, testing as you go
 - Run `vendor/bin/pint --dirty --format agent` after PHP changes
 - Run `npm run build` after frontend changes
-- Verify with `php artisan test` for the affected area
+- Verify with `./vendor/bin/pest` for the affected area
+- Run browser tests with `./vendor/bin/pest tests/Browser/` for UI changes
 
 ## Independent Thought — Challenge Assumptions
 
@@ -47,7 +49,7 @@ Going forward, avoid simply agreeing with my points or taking my conclusions at 
 
 ## Key Architecture Decisions
 
-### Task Tree (Hierarchical)
+### Task Explorer (Hierarchical)
 - Tasks form a tree via `parent_id` with materialized `path` for efficient queries
 - `is_leaf` flag marks actionable tasks; non-leaf tasks are containers
 - `plan` and `context` TEXT fields store AI session memory per task
@@ -55,9 +57,9 @@ Going forward, avoid simply agreeing with my points or taking my conclusions at 
 - Quality gates trigger when all sibling leaves are complete
 
 ### Multi-Tenancy
-- 20 of 25 models use `HasTenant` trait with `TenantScope` (user_id based)
+- 26 of 34 models use `HasTenant` trait with `TenantScope` (user_id based)
 - MCP server bypasses tenant scopes via `withoutGlobalScopes()` (local-only, no auth)
-- 5 models without tenant: User, HabitLog, TimeBlock, AgendaItem, Milestone
+- 8 models without tenant: User, HabitLog, TimeBlock, AgendaItem, Milestone, GoogleToken, EmailThread
 
 ### Database Conventions
 - **PostgreSQL**: Use `ilike` for case-insensitive search, `array_position()` instead of MySQL's `FIELD()`
@@ -82,8 +84,13 @@ All business logic lives in service classes (`app/Services/`):
 - `AiService` — AI interaction orchestration
 - `OnboardingService` — User onboarding flow
 - `GranolaSyncService` / `GranolaMcpClient` — Meeting transcript sync
+- `GoogleCalendarOAuthService` — Google Calendar OAuth 2.0 flow
+- `GoogleCalendarSyncService` — Sync events from Google Calendar
+- `FreeScoutApiClient` — FreeScout REST API client
+- `FreeScoutSyncService` — Email conversation sync (mailboxes, conversations, contacts)
+- `EmailIntelligenceService` — AI analysis of email conversations, agent quality scoring
 
-### Filament Resources (19 total)
+### Filament Resources (23 total)
 Every model with a Filament resource follows the same pattern:
 - Table with filters, search, and bulk actions
 - Create/Edit forms with proper validation
@@ -92,13 +99,15 @@ Every model with a Filament resource follows the same pattern:
 
 ### Custom Pages
 - `Dashboard` — 10 widgets showing daily plan, habits, goals, pipeline
-- `TaskTree` — Interactive hierarchical task visualization
+- `TaskExplorer` — Interactive hierarchical task visualization
+- `GoogleCalendarSettings` — Google Calendar OAuth and sync configuration
+- `FreeScoutSettings` — FreeScout email integration and sync configuration
 
 ### MCP Server Architecture
 The `solas-run` MCP server (`app/Mcp/`) uses a generic data-driven approach:
-- `ModelRegistry` — Central config for all 25 models (filters, searchable fields, dates)
+- `ModelRegistry` — Central config for all 34 models (filters, searchable fields, dates)
 - `ModelResolver` — Query builder + schema introspection
-- `InspectModel` tool — Schema for any model (50 tools total: inspect + list per model)
+- `InspectModel` tool — Schema for any model (68 tools total: inspect + list per model)
 - `ListModels` tool — Query with filters, search, pagination
 - `ModelRecord` resource — Fetch single record by URI template
 - `UpdateTaskPlan` / `UpdateTaskContext` tools — Write task memory fields
@@ -115,8 +124,8 @@ Each task has `plan` and `context` TEXT columns for AI session persistence:
 
 In addition to the Boost-provided skills, this project has:
 
-- `laravel-filament-development` — Filament v3 resource patterns, form builders, table builders, widgets, pages, relation managers. Activate when building or modifying Filament resources, forms, tables, widgets, or admin panel pages.
-- `phpunit-testing` — Integration-first testing with PHPUnit, factories, database assertions. Activate when writing or modifying tests.
+- `laravel-filament-development` — Filament v5 resource patterns, form builders, table builders, widgets, pages, relation managers. Activate when building or modifying Filament resources, forms, tables, widgets, or admin panel pages.
+- `phpunit-testing` — Integration-first testing with Pest v4 (on PHPUnit 12), factories, database assertions, and Playwright browser testing. Activate when writing or modifying tests.
 - `development-planning` — Structured planning for multi-file features, with task context persistence. Activate when entering plan mode or starting a complex feature.
 
 ---
@@ -262,6 +271,13 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - The application is served by Laravel Herd and will be available at: `https?://[kebab-case-project-dir].test`. Use the `get-absolute-url` tool to generate valid URLs for the user.
 - You must not run any commands to make the site available via HTTP(S). It is always available through Laravel Herd.
 
+=== tests rules ===
+
+# Test Enforcement
+
+- Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
+- Run the minimum number of tests needed to ensure code quality and speed. Use `php artisan test --compact` with a specific filename or filter.
+
 === laravel/core rules ===
 
 # Do Things the Laravel Way
@@ -374,5 +390,102 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Always use existing Tailwind conventions; check project patterns before adding new ones.
 - IMPORTANT: Always use `search-docs` tool for version-specific Tailwind CSS documentation and updated code examples. Never rely on training data.
 - IMPORTANT: Activate `tailwindcss-development` every time you're working with a Tailwind CSS or styling-related task.
+
+=== filament/filament rules ===
+
+## Filament
+
+- Filament is used by this application, check how and where to follow existing application conventions.
+- Filament is a Server-Driven UI (SDUI) framework for Laravel. It allows developers to define user interfaces in PHP using structured configuration objects. It is built on top of Livewire, Alpine.js, and Tailwind CSS.
+- You can use the `search-docs` tool to get information from the official Filament documentation when needed. This is very useful for Artisan command arguments, specific code examples, testing functionality, relationship management, and ensuring you're following idiomatic practices.
+- Utilize static `make()` methods for consistent component initialization.
+
+### Artisan
+
+- You must use the Filament specific Artisan commands to create new files or components for Filament. You can find these with the `list-artisan-commands` tool, or with `php artisan` and the `--help` option.
+- Inspect the required options, always pass `--no-interaction`, and valid arguments for other options when applicable.
+
+### Filament's Core Features
+
+- Actions: Handle doing something within the application, often with a button or link. Actions encapsulate the UI, the interactive modal window, and the logic that should be executed when the modal window is submitted. They can be used anywhere in the UI and are commonly used to perform one-time actions like deleting a record, sending an email, or updating data in the database based on modal form input.
+- Forms: Dynamic forms rendered within other features, such as resources, action modals, table filters, and more.
+- Infolists: Read-only lists of data.
+- Notifications: Flash notifications displayed to users within the application.
+- Panels: The top-level container in Filament that can include all other features like pages, resources, forms, tables, notifications, actions, infolists, and widgets.
+- Resources: Static classes that are used to build CRUD interfaces for Eloquent models. Typically live in `app/Filament/Resources`.
+- Schemas: Represent components that define the structure and behavior of the UI, such as forms, tables, or lists.
+- Tables: Interactive tables with filtering, sorting, pagination, and more.
+- Widgets: Small component included within dashboards, often used for displaying data in charts, tables, or as a stat.
+
+### Relationships
+
+- Determine if you can use the `relationship()` method on form components when you need `options` for a select, checkbox, repeater, or when building a `Fieldset`:
+
+<code-snippet name="Relationship example for Form Select" lang="php">
+Forms\Components\Select::make('user_id')
+    ->label('Author')
+    ->relationship('author')
+    ->required(),
+</code-snippet>
+
+## Testing
+
+- It's important to test Filament functionality for user satisfaction.
+- Ensure that you are authenticated to access the application within the test.
+- Filament uses Livewire, so start assertions with `livewire()` or `Livewire::test()`.
+
+### Example Tests
+
+<code-snippet name="Filament Table Test" lang="php">
+    livewire(ListUsers::class)
+        ->assertCanSeeTableRecords($users)
+        ->searchTable($users->first()->name)
+        ->assertCanSeeTableRecords($users->take(1))
+        ->assertCanNotSeeTableRecords($users->skip(1))
+        ->searchTable($users->last()->email)
+        ->assertCanSeeTableRecords($users->take(-1))
+        ->assertCanNotSeeTableRecords($users->take($users->count() - 1));
+</code-snippet>
+
+<code-snippet name="Filament Create Resource Test" lang="php">
+    livewire(CreateUser::class)
+        ->fillForm([
+            'name' => 'Howdy',
+            'email' => 'howdy@example.com',
+        ])
+        ->call('create')
+        ->assertNotified()
+        ->assertRedirect();
+
+    assertDatabaseHas(User::class, [
+        'name' => 'Howdy',
+        'email' => 'howdy@example.com',
+    ]);
+</code-snippet>
+
+<code-snippet name="Testing Multiple Panels (setup())" lang="php">
+    use Filament\Facades\Filament;
+
+    Filament::setCurrentPanel('app');
+</code-snippet>
+
+<code-snippet name="Calling an Action in a Test" lang="php">
+    livewire(EditInvoice::class, [
+        'invoice' => $invoice,
+    ])->callAction('send');
+
+    expect($invoice->refresh())->isSent()->toBeTrue();
+</code-snippet>
+
+## Version 3 Changes To Focus On
+
+- Resources are located in `app/Filament/Resources/` directory.
+- Resource pages (List, Create, Edit) are auto-generated within the resource's directory - e.g., `app/Filament/Resources/PostResource/Pages/`.
+- Forms use the `Forms\Components` namespace for form fields.
+- Tables use the `Tables\Columns` namespace for table columns.
+- A new `Filament\Forms\Components\RichEditor` component is available.
+- Form and table schemas now use fluent method chaining.
+- Added `php artisan filament:optimize` command for production optimization.
+- Requires implementing `FilamentUser` contract for production access control.
 
 </laravel-boost-guidelines>

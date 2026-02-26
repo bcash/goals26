@@ -2,8 +2,8 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Auth\Register;
+use App\Filament\Pages\Dashboard;
 use App\Http\Middleware\DevAutoLogin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -28,16 +28,29 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->registration(Register::class)
             ->brandName('Solas Rún')
             ->colors([
-                'primary' => Color::Amber,
-                'gray' => Color::Zinc,
-                'danger' => Color::Red,
-                'info' => Color::Blue,
-                'success' => Color::Green,
-                'warning' => Color::Orange,
+                'primary' => [
+                    50 => 'oklch(0.97 0.014 254)',
+                    100 => 'oklch(0.94 0.028 254)',
+                    200 => 'oklch(0.88 0.056 254)',
+                    300 => 'oklch(0.79 0.098 254)',
+                    400 => 'oklch(0.68 0.155 254)',
+                    500 => 'oklch(0.58 0.213 264)',
+                    600 => 'oklch(0.52 0.235 264)',
+                    700 => 'oklch(0.46 0.216 264)',
+                    800 => 'oklch(0.39 0.180 264)',
+                    900 => 'oklch(0.34 0.144 264)',
+                    950 => 'oklch(0.25 0.105 264)',
+                ],
+                'gray' => Color::Slate,
+                'danger' => Color::Rose,
+                'info' => Color::Sky,
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
             ])
             ->font('Inter')
             ->navigationGroups([

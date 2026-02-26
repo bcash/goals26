@@ -4,30 +4,43 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\DeferredItemResource\Pages;
 use App\Models\DeferredItem;
-use Filament\Forms\Form;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, TextInput, Textarea, Select,
-    DatePicker, Placeholder, Checkbox
-};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\{SelectFilter, Filter};
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Actions\{EditAction, DeleteAction, ViewAction, Action, BulkAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 
 class DeferredItemResource extends Resource
 {
     protected static ?string $model = DeferredItem::class;
-    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
-    protected static ?string $navigationGroup = 'Goals & Projects';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Goals & Projects';
+
     protected static ?string $navigationLabel = 'Someday / Maybe';
+
     protected static ?int $navigationSort = 7;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Deferred Item')->schema([
                 TextInput::make('title')->required()->columnSpanFull(),
 
@@ -68,7 +81,7 @@ class DeferredItemResource extends Resource
                         ->label('Client Type')
                         ->options([
                             'external' => 'External Client',
-                            'self'     => 'Personal Goal',
+                            'self' => 'Personal Goal',
                         ])
                         ->default('external')
                         ->required()
@@ -77,29 +90,29 @@ class DeferredItemResource extends Resource
                     Select::make('deferral_reason')
                         ->label('Why Deferred')
                         ->options([
-                            'budget'            => 'Budget',
-                            'timeline'          => 'Timeline',
-                            'priority'          => 'Priority',
-                            'client-not-ready'  => 'Client Not Ready',
-                            'scope-control'     => 'Scope Control',
+                            'budget' => 'Budget',
+                            'timeline' => 'Timeline',
+                            'priority' => 'Priority',
+                            'client-not-ready' => 'Client Not Ready',
+                            'scope-control' => 'Scope Control',
                             'awaiting-decision' => 'Awaiting Decision',
-                            'technology'        => 'Technology',
-                            'personal'          => 'Personal',
+                            'technology' => 'Technology',
+                            'personal' => 'Personal',
                         ])
                         ->required(),
 
                     Select::make('opportunity_type')
                         ->label('Opportunity Type')
                         ->options([
-                            'phase-2'              => 'Phase 2',
-                            'upsell'               => 'Upsell',
-                            'upgrade'              => 'Upgrade',
-                            'new-project'          => 'New Project',
-                            'retainer'             => 'Retainer',
-                            'product-feature'      => 'Product Feature',
-                            'personal-goal'        => 'Personal Goal',
+                            'phase-2' => 'Phase 2',
+                            'upsell' => 'Upsell',
+                            'upgrade' => 'Upgrade',
+                            'new-project' => 'New Project',
+                            'retainer' => 'Retainer',
+                            'product-feature' => 'Product Feature',
+                            'personal-goal' => 'Personal Goal',
                             'personal-development' => 'Personal Development',
-                            'none'                 => 'None',
+                            'none' => 'None',
                         ])
                         ->required()
                         ->live(),
@@ -110,8 +123,7 @@ class DeferredItemResource extends Resource
                         ->label('Estimated Value ($)')
                         ->numeric()
                         ->prefix('$')
-                        ->visible(fn ($get) =>
-                            !in_array($get('opportunity_type'), ['none', 'personal-goal'])
+                        ->visible(fn ($get) => ! in_array($get('opportunity_type'), ['none', 'personal-goal'])
                         ),
 
                     DatePicker::make('revisit_date')
@@ -120,14 +132,14 @@ class DeferredItemResource extends Resource
 
                     Select::make('status')
                         ->options([
-                            'someday'   => 'Someday / Maybe',
+                            'someday' => 'Someday / Maybe',
                             'scheduled' => 'Scheduled',
                             'in-review' => 'In Review',
-                            'promoted'  => 'In Pipeline',
-                            'proposed'  => 'Proposed',
-                            'won'       => 'Won',
-                            'lost'      => 'Lost',
-                            'archived'  => 'Archived',
+                            'promoted' => 'In Pipeline',
+                            'proposed' => 'Proposed',
+                            'won' => 'Won',
+                            'lost' => 'Lost',
+                            'archived' => 'Archived',
                         ])
                         ->default('someday'),
                 ]),
@@ -173,9 +185,9 @@ class DeferredItemResource extends Resource
                         Select::make('resource_requirements.energy')
                             ->label('Energy Level Required')
                             ->options([
-                                'low'     => 'Low',
-                                'medium'  => 'Medium',
-                                'high'    => 'High',
+                                'low' => 'Low',
+                                'medium' => 'Medium',
+                                'high' => 'High',
                                 'maximum' => 'Maximum',
                             ])
                             ->nullable(),
@@ -193,8 +205,7 @@ class DeferredItemResource extends Resource
             Section::make('AI Opportunity Analysis')->schema([
                 Placeholder::make('ai_opportunity_analysis')
                     ->label('')
-                    ->content(fn ($record) =>
-                        $record?->ai_opportunity_analysis
+                    ->content(fn ($record) => $record?->ai_opportunity_analysis
                         ?? 'Save this item to generate an AI opportunity analysis.'
                     )
                     ->columnSpanFull(),
@@ -216,14 +227,14 @@ class DeferredItemResource extends Resource
                     ->label('Type')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'phase-2'         => 'success',
-                        'upsell'          => 'warning',
-                        'upgrade'         => 'info',
-                        'new-project'     => 'danger',
-                        'retainer'        => 'success',
+                        'phase-2' => 'success',
+                        'upsell' => 'warning',
+                        'upgrade' => 'info',
+                        'new-project' => 'danger',
+                        'retainer' => 'success',
                         'product-feature' => 'info',
-                        'personal-goal'   => 'gray',
-                        default           => 'gray',
+                        'personal-goal' => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('deferral_reason')
@@ -240,23 +251,22 @@ class DeferredItemResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'someday'   => 'gray',
+                        'someday' => 'gray',
                         'scheduled' => 'info',
                         'in-review' => 'warning',
-                        'promoted'  => 'success',
-                        'proposed'  => 'warning',
-                        'won'       => 'success',
-                        'lost'      => 'danger',
-                        'archived'  => 'gray',
-                        default     => 'gray',
+                        'promoted' => 'success',
+                        'proposed' => 'warning',
+                        'won' => 'success',
+                        'lost' => 'danger',
+                        'archived' => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('revisit_date')
                     ->label('Revisit')
                     ->date('M j, Y')
                     ->sortable()
-                    ->color(fn ($record) =>
-                        $record->revisit_date?->isPast() && in_array($record->status, ['someday', 'scheduled'])
+                    ->color(fn ($record) => $record->revisit_date?->isPast() && in_array($record->status, ['someday', 'scheduled'])
                             ? 'danger'
                             : 'gray'
                     ),
@@ -271,32 +281,30 @@ class DeferredItemResource extends Resource
                 SelectFilter::make('opportunity_type')
                     ->label('Opportunity Type')
                     ->options([
-                        'phase-2'         => 'Phase 2',
-                        'upsell'          => 'Upsell',
-                        'upgrade'         => 'Upgrade',
-                        'new-project'     => 'New Project',
-                        'retainer'        => 'Retainer',
+                        'phase-2' => 'Phase 2',
+                        'upsell' => 'Upsell',
+                        'upgrade' => 'Upgrade',
+                        'new-project' => 'New Project',
+                        'retainer' => 'Retainer',
                         'product-feature' => 'Product Feature',
                     ]),
 
                 SelectFilter::make('status')
                     ->options([
-                        'someday'   => 'Someday / Maybe',
+                        'someday' => 'Someday / Maybe',
                         'scheduled' => 'Scheduled',
-                        'promoted'  => 'In Pipeline',
+                        'promoted' => 'In Pipeline',
                     ]),
 
                 Filter::make('overdue')
                     ->label('Overdue for Review')
-                    ->query(fn ($query) =>
-                        $query->where('revisit_date', '<=', today())
-                              ->whereIn('status', ['someday', 'scheduled'])
+                    ->query(fn ($query) => $query->where('revisit_date', '<=', today())
+                        ->whereIn('status', ['someday', 'scheduled'])
                     ),
 
                 Filter::make('high_value')
                     ->label('High Value (> $5k)')
-                    ->query(fn ($query) =>
-                        $query->where('estimated_value', '>=', 5000)
+                    ->query(fn ($query) => $query->where('estimated_value', '>=', 5000)
                     ),
             ], layout: FiltersLayout::AboveContent)
             ->actions([
@@ -304,18 +312,17 @@ class DeferredItemResource extends Resource
                     ->label('Review')
                     ->icon('heroicon-o-eye')
                     ->color('warning')
-                    ->visible(fn ($record) =>
-                        ($record->revisit_date?->isPast() && in_array($record->status, ['someday', 'scheduled']))
+                    ->visible(fn ($record) => ($record->revisit_date?->isPast() && in_array($record->status, ['someday', 'scheduled']))
                         || $record->status === 'someday'
                     )
                     ->form([
                         Select::make('outcome')
                             ->options([
                                 'keep-someday' => 'Keep in Someday / Maybe',
-                                'reschedule'   => 'Reschedule',
-                                'promote'      => 'Move to Pipeline',
-                                'propose'      => 'Ready to Propose',
-                                'archive'      => 'Archive',
+                                'reschedule' => 'Reschedule',
+                                'promote' => 'Move to Pipeline',
+                                'propose' => 'Ready to Propose',
+                                'archive' => 'Archive',
                             ])
                             ->required()
                             ->live(),
@@ -338,9 +345,8 @@ class DeferredItemResource extends Resource
                     ->label('Add to Pipeline')
                     ->icon('heroicon-o-arrow-trending-up')
                     ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->opportunity_type !== 'none'
-                        && !in_array($record->status, ['promoted', 'proposed', 'won', 'archived'])
+                    ->visible(fn ($record) => $record->opportunity_type !== 'none'
+                        && ! in_array($record->status, ['promoted', 'proposed', 'won', 'archived'])
                     )
                     ->action(fn ($record) => $record->promote()),
 
@@ -352,8 +358,7 @@ class DeferredItemResource extends Resource
                     BulkAction::make('archive')
                         ->label('Archive Selected')
                         ->icon('heroicon-o-archive-box')
-                        ->action(fn ($records) =>
-                            $records->each->update(['status' => 'archived'])
+                        ->action(fn ($records) => $records->each->update(['status' => 'archived'])
                         ),
                     DeleteBulkAction::make(),
                 ]),
@@ -363,10 +368,10 @@ class DeferredItemResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListDeferredItems::route('/'),
+            'index' => Pages\ListDeferredItems::route('/'),
             'create' => Pages\CreateDeferredItem::route('/create'),
-            'view'   => Pages\ViewDeferredItem::route('/{record}'),
-            'edit'   => Pages\EditDeferredItem::route('/{record}/edit'),
+            'view' => Pages\ViewDeferredItem::route('/{record}'),
+            'edit' => Pages\EditDeferredItem::route('/{record}/edit'),
         ];
     }
 }

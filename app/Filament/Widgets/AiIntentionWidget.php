@@ -8,8 +8,10 @@ use Filament\Notifications\Notification;
 class AiIntentionWidget extends BaseWidget
 {
     protected static ?int $sort = 6;
-    protected int | string | array $columnSpan = 'full';
-    protected static string $view = 'filament.widgets.ai-intention-widget';
+
+    protected int|string|array $columnSpan = 'full';
+
+    protected string $view = 'filament.widgets.ai-intention-widget';
 
     public bool $isGenerating = false;
 

@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\ClientMeeting;
 use App\Models\DeferredItem;
 use App\Models\LifeArea;
 use App\Models\MeetingDoneItem;
+use App\Models\MeetingNote;
 use App\Models\MeetingResourceSignal;
 use App\Models\MeetingScopeItem;
 use App\Models\Task;
@@ -19,7 +19,7 @@ class MeetingIntelligenceService
      * Full analysis pipeline for a meeting transcript.
      * Extracts all intelligence categories and persists them.
      */
-    public function analyze(ClientMeeting $meeting): void
+    public function analyze(MeetingNote $meeting): void
     {
         $meeting->update(['transcription_status' => 'processing']);
 
@@ -52,19 +52,23 @@ class MeetingIntelligenceService
      * Call AI once with a comprehensive extraction prompt.
      * Returns all categories in a single structured JSON response.
      */
-    public function extractAll(ClientMeeting $meeting): array
+    public function extractAll(MeetingNote $meeting): array
     {
+        $clientName = $meeting->project?->client_name ?? 'Unknown';
+        $projectName = $meeting->project?->name ?? 'No linked project';
+        $meetingDate = $meeting->meeting_date->format('M j, Y');
+
         $clientContext = $meeting->isSelfMeeting()
             ? "This is an internal planning session. The 'client' is the user themselves."
-            : "This is a meeting with an external client: {$meeting->project?->client_name}.";
+            : "This is a meeting with an external client: {$clientName}.";
 
         $prompt = <<<PROMPT
 You are a project intelligence analyst. Analyze this meeting transcript and extract structured data.
 
 MEETING: "{$meeting->title}"
-DATE: {$meeting->meeting_date->format('M j, Y')}
+DATE: {$meetingDate}
 TYPE: {$meeting->meeting_type}
-PROJECT: {$meeting->project?->name ?? 'No linked project'}
+PROJECT: {$projectName}
 CONTEXT: {$clientContext}
 
 TRANSCRIPT:
@@ -149,7 +153,7 @@ PROMPT;
     /**
      * Persist done items extracted from the meeting.
      */
-    public function persistDoneItems(ClientMeeting $meeting, array $items): void
+    public function persistDoneItems(MeetingNote $meeting, array $items): void
     {
         foreach ($items as $item) {
             MeetingDoneItem::create([
@@ -169,7 +173,7 @@ PROMPT;
     /**
      * Persist scope items (in-scope, out-of-scope, assumptions, risks).
      */
-    public function persistScopeItems(ClientMeeting $meeting, array $items): void
+    public function persistScopeItems(MeetingNote $meeting, array $items): void
     {
         foreach ($items as $item) {
             MeetingScopeItem::create([
@@ -186,7 +190,7 @@ PROMPT;
     /**
      * Persist deferred items -- items explicitly set aside during the meeting.
      */
-    public function persistDeferredItems(ClientMeeting $meeting, array $items): void
+    public function persistDeferredItems(MeetingNote $meeting, array $items): void
     {
         foreach ($items as $item) {
             DeferredItem::create([
@@ -213,7 +217,7 @@ PROMPT;
     /**
      * Persist resource signals -- mentions of constraints that explain deferrals.
      */
-    public function persistResourceSignals(ClientMeeting $meeting, array $signals): void
+    public function persistResourceSignals(MeetingNote $meeting, array $signals): void
     {
         foreach ($signals as $signal) {
             MeetingResourceSignal::create([
@@ -231,7 +235,7 @@ PROMPT;
      * Persist action items as tasks.
      * Only creates tasks for items assigned to the user (not client-only items).
      */
-    public function persistActionItems(ClientMeeting $meeting, array $items): void
+    public function persistActionItems(MeetingNote $meeting, array $items): void
     {
         foreach ($items as $item) {
             $assignedTo = $item['assigned_to'] ?? 'user';
@@ -261,9 +265,9 @@ PROMPT;
     /**
      * Notify the user about the completed meeting analysis.
      */
-    public function notifyUser(ClientMeeting $meeting, ?array $extracted = null): void
+    public function notifyUser(MeetingNote $meeting, ?array $extracted = null): void
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return;
         }
 
@@ -272,7 +276,7 @@ PROMPT;
         $actionCount = count($extracted['action_items'] ?? []);
 
         Notification::make()
-            ->title('Meeting analyzed: ' . $meeting->title)
+            ->title('Meeting analyzed: '.$meeting->title)
             ->body(
                 "{$actionCount} action items, {$doneCount} done items, {$deferredCount} deferred items"
             )

@@ -4,20 +4,24 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AiInteractionResource\Pages;
 use App\Models\AiInteraction;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables\Table;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Placeholder;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Table;
 
 class AiInteractionResource extends Resource
 {
     protected static ?string $model = AiInteraction::class;
-    protected static ?string $navigationIcon = 'heroicon-o-cpu-chip';
-    protected static ?string $navigationGroup = 'AI Studio';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cpu-chip';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'AI Studio';
+
     protected static ?string $navigationLabel = 'AI History';
+
     protected static ?int $navigationSort = 2;
 
     public static function canCreate(): bool
@@ -25,9 +29,9 @@ class AiInteractionResource extends Resource
         return false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Placeholder::make('interaction_type')
                 ->content(fn ($record) => $record->interaction_type),
             Placeholder::make('model_used')
@@ -56,12 +60,12 @@ class AiInteractionResource extends Resource
                     ->label('Type')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'daily-morning'  => 'warning',
-                        'daily-evening'  => 'info',
-                        'weekly'         => 'success',
+                        'daily-morning' => 'warning',
+                        'daily-evening' => 'info',
+                        'weekly' => 'success',
                         'goal-breakdown' => 'danger',
-                        'freeform'       => 'gray',
-                        default          => 'gray',
+                        'freeform' => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('model_used')->label('Model')->color('gray'),
@@ -73,11 +77,11 @@ class AiInteractionResource extends Resource
             ->filters([
                 SelectFilter::make('interaction_type')
                     ->options([
-                        'daily-morning'  => 'Morning',
-                        'daily-evening'  => 'Evening',
-                        'weekly'         => 'Weekly',
+                        'daily-morning' => 'Morning',
+                        'daily-evening' => 'Evening',
+                        'weekly' => 'Weekly',
                         'goal-breakdown' => 'Goal Breakdown',
-                        'freeform'       => 'Freeform',
+                        'freeform' => 'Freeform',
                     ]),
             ])
             ->actions([ViewAction::make()])
@@ -88,7 +92,7 @@ class AiInteractionResource extends Resource
     {
         return [
             'index' => Pages\ListAiInteractions::route('/'),
-            'view'  => Pages\ViewAiInteraction::route('/{record}'),
+            'view' => Pages\ViewAiInteraction::route('/{record}'),
         ];
     }
 }

@@ -4,30 +4,39 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OpportunityPipelineResource\Pages;
 use App\Models\OpportunityPipeline;
-use App\Services\OpportunityPipelineService;
-use Filament\Forms\Form;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, TextInput, Textarea, Select,
-    DatePicker, Placeholder
-};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Actions\{EditAction, ViewAction, Action};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
+use Filament\Tables\Table;
 
 class OpportunityPipelineResource extends Resource
 {
     protected static ?string $model = OpportunityPipeline::class;
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-trending-up';
-    protected static ?string $navigationGroup = 'Goals & Projects';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-trending-up';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Goals & Projects';
+
     protected static ?string $navigationLabel = 'Opportunity Pipeline';
+
     protected static ?int $navigationSort = 8;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Opportunity')->schema([
                 Grid::make(2)->schema([
                     Select::make('deferred_item_id')
@@ -39,12 +48,12 @@ class OpportunityPipelineResource extends Resource
 
                     Select::make('stage')
                         ->options([
-                            'identified'  => 'Identified',
-                            'qualifying'  => 'Qualifying',
-                            'nurturing'   => 'Nurturing',
-                            'proposing'   => 'Proposing',
+                            'identified' => 'Identified',
+                            'qualifying' => 'Qualifying',
+                            'nurturing' => 'Nurturing',
+                            'proposing' => 'Proposing',
                             'negotiating' => 'Negotiating',
-                            'closed-won'  => 'Closed Won',
+                            'closed-won' => 'Closed Won',
                             'closed-lost' => 'Closed Lost',
                         ])
                         ->required()
@@ -77,7 +86,7 @@ class OpportunityPipelineResource extends Resource
                     Placeholder::make('weighted_value_display')
                         ->label('Weighted Value')
                         ->content(fn ($record) => $record
-                            ? '$' . number_format($record->weightedValue(), 2)
+                            ? '$'.number_format($record->weightedValue(), 2)
                             : '--'
                         ),
                 ]),
@@ -120,14 +129,14 @@ class OpportunityPipelineResource extends Resource
                 TextColumn::make('stage')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'identified'  => 'gray',
-                        'qualifying'  => 'info',
-                        'nurturing'   => 'info',
-                        'proposing'   => 'warning',
+                        'identified' => 'gray',
+                        'qualifying' => 'info',
+                        'nurturing' => 'info',
+                        'proposing' => 'warning',
                         'negotiating' => 'warning',
-                        'closed-won'  => 'success',
+                        'closed-won' => 'success',
                         'closed-lost' => 'danger',
-                        default       => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('probability_percent')
@@ -142,7 +151,7 @@ class OpportunityPipelineResource extends Resource
                     ->state(fn ($record) => $record->weightedValue())
                     ->sortable(query: function ($query, string $direction) {
                         return $query->orderByRaw(
-                            'COALESCE(estimated_value, 0) * COALESCE(probability_percent, 0) / 100 ' . $direction
+                            'COALESCE(estimated_value, 0) * COALESCE(probability_percent, 0) / 100 '.$direction
                         );
                     }),
 
@@ -150,20 +159,19 @@ class OpportunityPipelineResource extends Resource
                     ->label('Next Action')
                     ->date('M j, Y')
                     ->sortable()
-                    ->color(fn ($record) =>
-                        $record->next_action_date?->isPast() ? 'danger' : 'gray'
+                    ->color(fn ($record) => $record->next_action_date?->isPast() ? 'danger' : 'gray'
                     ),
             ])
             ->defaultSort('next_action_date')
             ->filters([
                 SelectFilter::make('stage')
                     ->options([
-                        'identified'  => 'Identified',
-                        'qualifying'  => 'Qualifying',
-                        'nurturing'   => 'Nurturing',
-                        'proposing'   => 'Proposing',
+                        'identified' => 'Identified',
+                        'qualifying' => 'Qualifying',
+                        'nurturing' => 'Nurturing',
+                        'proposing' => 'Proposing',
                         'negotiating' => 'Negotiating',
-                        'closed-won'  => 'Closed Won',
+                        'closed-won' => 'Closed Won',
                         'closed-lost' => 'Closed Lost',
                     ]),
             ])
@@ -172,8 +180,7 @@ class OpportunityPipelineResource extends Resource
                     ->label('Advance Stage')
                     ->icon('heroicon-o-arrow-right')
                     ->color('success')
-                    ->visible(fn ($record) =>
-                        !in_array($record->stage, ['closed-won', 'closed-lost'])
+                    ->visible(fn ($record) => ! in_array($record->stage, ['closed-won', 'closed-lost'])
                     )
                     ->action(function ($record) {
                         $stages = [
@@ -201,10 +208,10 @@ class OpportunityPipelineResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListOpportunityPipelines::route('/'),
+            'index' => Pages\ListOpportunityPipelines::route('/'),
             'create' => Pages\CreateOpportunityPipeline::route('/create'),
-            'view'   => Pages\ViewOpportunityPipeline::route('/{record}'),
-            'edit'   => Pages\EditOpportunityPipeline::route('/{record}/edit'),
+            'view' => Pages\ViewOpportunityPipeline::route('/{record}'),
+            'edit' => Pages\EditOpportunityPipeline::route('/{record}/edit'),
         ];
     }
 }

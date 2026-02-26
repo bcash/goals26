@@ -4,9 +4,11 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Resources\ModelRecord;
 use App\Mcp\Support\ModelRegistry;
+use App\Mcp\Tools\ExportProjectSpec;
+use App\Mcp\Tools\ImportGranolaMeeting;
 use App\Mcp\Tools\InspectModel;
 use App\Mcp\Tools\ListModels;
-use App\Mcp\Tools\ExportProjectSpec;
+use App\Mcp\Tools\QueryGranolaMeetings;
 use App\Mcp\Tools\UpdateTaskContext;
 use App\Mcp\Tools\UpdateTaskPlan;
 use Laravel\Mcp\Server;
@@ -30,6 +32,10 @@ Task memory tools (for session persistence):
 
 Spec export:
 - `export-project-spec`: Export a project's task tree as markdown spec files for a new Claude Code project
+
+Granola integration (requires user to have connected Granola via OAuth):
+- `query-granola-meetings`: Search or list meetings from the user's Granola account
+- `import-granola-meeting`: Import a specific Granola meeting as a ClientMeeting record with AI analysis
 
 Key conventions:
 - Legacy money fields store decimal dollars — e.g., `estimated_value` = 5000.00
@@ -66,10 +72,14 @@ class SolasRunServer extends Server
         }
 
         // Task memory tools — persist plan and context across sessions
-        $this->tools[] = new UpdateTaskPlan();
-        $this->tools[] = new UpdateTaskContext();
+        $this->tools[] = new UpdateTaskPlan;
+        $this->tools[] = new UpdateTaskContext;
 
         // Spec export tool — generate markdown specs for new projects
-        $this->tools[] = new ExportProjectSpec();
+        $this->tools[] = new ExportProjectSpec;
+
+        // Granola integration tools — query and import meetings
+        $this->tools[] = new QueryGranolaMeetings;
+        $this->tools[] = new ImportGranolaMeeting;
     }
 }

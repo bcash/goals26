@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\AgendaItem;
-use App\Models\ClientMeeting;
 use App\Models\MeetingAgenda;
+use App\Models\MeetingNote;
 use App\Models\Project;
 
 class AgendaService
@@ -17,7 +17,7 @@ class AgendaService
      */
     public function buildAgenda(
         Project $project,
-        ?ClientMeeting $meeting = null,
+        ?MeetingNote $meeting = null,
         ?string $title = null,
         ?string $clientType = 'external',
         ?string $purpose = null,
@@ -26,8 +26,8 @@ class AgendaService
         $agenda = MeetingAgenda::create([
             'user_id' => auth()->id(),
             'project_id' => $project->id,
-            'client_meeting_id' => $meeting?->id,
-            'title' => $title ?? 'Meeting Agenda: ' . $project->name,
+            'meeting_note_id' => $meeting?->id,
+            'title' => $title ?? 'Meeting Agenda: '.$project->name,
             'client_type' => $clientType,
             'client_name' => $project->client_name,
             'scheduled_for' => $scheduledFor,
@@ -86,7 +86,7 @@ class AgendaService
      */
     public function addOpenActionItems(MeetingAgenda $agenda): void
     {
-        if (!$agenda->project_id) {
+        if (! $agenda->project_id) {
             return;
         }
 
@@ -96,7 +96,7 @@ class AgendaService
         foreach ($openTasks as $task) {
             AgendaItem::create([
                 'agenda_id' => $agenda->id,
-                'title' => 'Follow-up: ' . $task->title,
+                'title' => 'Follow-up: '.$task->title,
                 'item_type' => 'action-followup',
                 'source_type' => 'task',
                 'source_id' => $task->id,
@@ -110,7 +110,7 @@ class AgendaService
      */
     public function addDeferredReviewItems(MeetingAgenda $agenda): void
     {
-        if (!$agenda->project_id) {
+        if (! $agenda->project_id) {
             return;
         }
 
@@ -120,7 +120,7 @@ class AgendaService
         foreach ($deferredItems as $item) {
             AgendaItem::create([
                 'agenda_id' => $agenda->id,
-                'title' => 'Revisit: ' . $item->title,
+                'title' => 'Revisit: '.$item->title,
                 'description' => $item->revisit_trigger
                     ? "Trigger: {$item->revisit_trigger}"
                     : null,
@@ -181,10 +181,10 @@ PROMPT;
     /**
      * Mark an agenda as complete and link it to the resulting meeting record.
      */
-    public function linkToMeeting(MeetingAgenda $agenda, ClientMeeting $meeting): void
+    public function linkToMeeting(MeetingAgenda $agenda, MeetingNote $meeting): void
     {
         $agenda->update([
-            'client_meeting_id' => $meeting->id,
+            'meeting_note_id' => $meeting->id,
             'status' => 'complete',
         ]);
     }

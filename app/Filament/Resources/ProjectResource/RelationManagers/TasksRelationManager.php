@@ -2,22 +2,25 @@
 
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Components\{TextInput, Grid, Select, DatePicker};
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\{EditAction, DeleteAction, CreateAction};
+use Filament\Tables\Table;
 
 class TasksRelationManager extends RelationManager
 {
     protected static string $relationship = 'tasks';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             TextInput::make('title')->required()->columnSpanFull(),
             Grid::make(3)->schema([
                 Select::make('status')
@@ -42,19 +45,19 @@ class TasksRelationManager extends RelationManager
                 TextColumn::make('title')->searchable()->wrap(),
                 TextColumn::make('status')->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'todo'        => 'gray',
+                        'todo' => 'gray',
                         'in-progress' => 'warning',
-                        'done'        => 'success',
-                        'deferred'    => 'info',
-                        default       => 'gray',
+                        'done' => 'success',
+                        'deferred' => 'info',
+                        default => 'gray',
                     }),
                 TextColumn::make('priority')->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'low'      => 'gray',
-                        'medium'   => 'info',
-                        'high'     => 'warning',
+                        'low' => 'gray',
+                        'medium' => 'info',
+                        'high' => 'warning',
                         'critical' => 'danger',
-                        default    => 'gray',
+                        default => 'gray',
                     }),
                 TextColumn::make('due_date')->date('M j, Y')->sortable(),
             ])

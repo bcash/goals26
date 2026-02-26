@@ -4,18 +4,26 @@ namespace App\Mcp\Support;
 
 use App\Models\AgendaItem;
 use App\Models\AiInteraction;
-use App\Models\ClientMeeting;
+use App\Models\CalendarEvent;
+use App\Models\ConversationNote;
 use App\Models\CostEntry;
 use App\Models\DailyPlan;
 use App\Models\DeferralReview;
 use App\Models\DeferredItem;
+use App\Models\EmailContact;
+use App\Models\EmailConversation;
+use App\Models\EmailThread;
+use App\Models\FreeScoutMailbox;
 use App\Models\Goal;
+use App\Models\GoogleCalendarConfig;
+use App\Models\GoogleToken;
 use App\Models\Habit;
 use App\Models\HabitLog;
 use App\Models\JournalEntry;
 use App\Models\LifeArea;
 use App\Models\MeetingAgenda;
 use App\Models\MeetingDoneItem;
+use App\Models\MeetingNote;
 use App\Models\MeetingResourceSignal;
 use App\Models\MeetingScopeItem;
 use App\Models\Milestone;
@@ -32,7 +40,7 @@ use App\Models\WeeklyReview;
 class ModelRegistry
 {
     /**
-     * All 26 model configurations keyed by slug.
+     * All 34 model configurations keyed by slug.
      *
      * @return array<string, array{
      *     class: class-string,
@@ -195,9 +203,9 @@ class ModelRegistry
                 'hasTenant' => true,
             ],
 
-            'client-meeting' => [
-                'class' => ClientMeeting::class,
-                'label' => 'Client Meeting',
+            'meeting-note' => [
+                'class' => MeetingNote::class,
+                'label' => 'Meeting Note',
                 'filters' => [
                     'meeting_type' => ['kickoff', 'status', 'review', 'planning', 'retrospective', 'ad_hoc'],
                     'client_type' => ['new', 'existing', 'returning'],
@@ -217,7 +225,7 @@ class ModelRegistry
                 ],
                 'searchable' => ['description', 'client_quote', 'notes'],
                 'dates' => ['created_at'],
-                'belongsTo' => ['clientMeeting', 'task'],
+                'belongsTo' => ['meetingNote', 'task'],
                 'hasTenant' => true,
             ],
 
@@ -227,7 +235,7 @@ class ModelRegistry
                 'filters' => [],
                 'searchable' => ['title', 'description', 'outcome', 'client_quote'],
                 'dates' => ['created_at'],
-                'belongsTo' => ['meeting', 'task', 'project'],
+                'belongsTo' => ['meetingNote', 'task', 'project'],
                 'hasTenant' => true,
             ],
 
@@ -239,7 +247,7 @@ class ModelRegistry
                 ],
                 'searchable' => ['description', 'client_quote', 'constraint_timeline'],
                 'dates' => ['created_at'],
-                'belongsTo' => ['clientMeeting', 'deferredItem'],
+                'belongsTo' => ['meetingNote', 'deferredItem'],
                 'hasTenant' => true,
             ],
 
@@ -252,7 +260,7 @@ class ModelRegistry
                 ],
                 'searchable' => ['title', 'purpose', 'client_name', 'notes'],
                 'dates' => ['scheduled_for', 'created_at'],
-                'belongsTo' => ['project', 'meeting'],
+                'belongsTo' => ['project', 'meetingNote'],
                 'hasTenant' => true,
             ],
 
@@ -291,7 +299,7 @@ class ModelRegistry
                 ],
                 'searchable' => ['title', 'description', 'client_context', 'why_it_matters', 'client_name', 'client_quote'],
                 'dates' => ['deferred_on', 'revisit_date', 'last_reviewed_at', 'created_at'],
-                'belongsTo' => ['task', 'project', 'meeting', 'scopeItem'],
+                'belongsTo' => ['task', 'project', 'meetingNote', 'emailConversation', 'scopeItem'],
                 'hasTenant' => true,
             ],
 
@@ -349,7 +357,7 @@ class ModelRegistry
                 ],
                 'searchable' => ['description'],
                 'dates' => ['logged_date', 'created_at'],
-                'belongsTo' => ['project', 'task', 'clientMeeting'],
+                'belongsTo' => ['project', 'task', 'meetingNote'],
                 'hasTenant' => true,
             ],
 
@@ -363,6 +371,101 @@ class ModelRegistry
                 'dates' => ['due_date', 'created_at'],
                 'belongsTo' => ['goal'],
                 'hasTenant' => false,
+            ],
+
+            'calendar-event' => [
+                'class' => CalendarEvent::class,
+                'label' => 'Calendar Event',
+                'filters' => [
+                    'status' => ['confirmed', 'tentative', 'cancelled'],
+                    'event_type' => ['meeting', 'rehearsal', 'personal', 'focus', 'other'],
+                    'source' => ['google', 'manual'],
+                ],
+                'searchable' => ['title', 'description', 'location', 'organizer_email'],
+                'dates' => ['start_at', 'end_at', 'synced_at', 'created_at'],
+                'belongsTo' => ['lifeArea', 'project'],
+                'hasTenant' => true,
+            ],
+
+            'google-calendar-config' => [
+                'class' => GoogleCalendarConfig::class,
+                'label' => 'Google Calendar Config',
+                'filters' => [],
+                'searchable' => ['calendar_name', 'google_calendar_id'],
+                'dates' => ['created_at'],
+                'belongsTo' => ['lifeArea'],
+                'hasTenant' => true,
+            ],
+
+            'google-token' => [
+                'class' => GoogleToken::class,
+                'label' => 'Google Token',
+                'filters' => [],
+                'searchable' => [],
+                'dates' => ['expires_at', 'created_at'],
+                'belongsTo' => [],
+                'hasTenant' => false,
+            ],
+
+            'conversation-note' => [
+                'class' => ConversationNote::class,
+                'label' => 'Conversation Note',
+                'filters' => [
+                    'note_type' => ['observation', 'action_proposal', 'response_draft', 'quality_feedback', 'research', 'task_link'],
+                ],
+                'searchable' => ['content'],
+                'dates' => ['synced_at'],
+                'belongsTo' => ['user', 'emailConversation'],
+                'hasTenant' => true,
+            ],
+
+            'email-contact' => [
+                'class' => EmailContact::class,
+                'label' => 'Email Contact',
+                'filters' => [
+                    'contact_type' => ['client', 'vendor', 'supplier', 'partner', 'team', 'personal', 'other'],
+                ],
+                'searchable' => ['first_name', 'last_name', 'email', 'company'],
+                'dates' => ['first_contact_at', 'last_contact_at'],
+                'belongsTo' => ['user', 'project'],
+                'hasTenant' => true,
+            ],
+
+            'email-conversation' => [
+                'class' => EmailConversation::class,
+                'label' => 'Email Conversation',
+                'filters' => [
+                    'status' => ['active', 'pending', 'closed', 'spam'],
+                    'category' => ['support', 'sales', 'vendor', 'supplier', 'billing', 'general'],
+                    'importance' => ['low', 'normal', 'high', 'critical'],
+                    'analysis_status' => ['pending', 'processing', 'complete', 'failed'],
+                ],
+                'searchable' => ['subject'],
+                'dates' => ['first_message_at', 'last_message_at'],
+                'belongsTo' => ['user', 'contact', 'project'],
+                'hasTenant' => true,
+            ],
+
+            'email-thread' => [
+                'class' => EmailThread::class,
+                'label' => 'Email Thread',
+                'filters' => [
+                    'type' => ['customer', 'agent', 'note'],
+                ],
+                'searchable' => ['body', 'from_name'],
+                'dates' => ['message_at'],
+                'belongsTo' => ['conversation'],
+                'hasTenant' => false,
+            ],
+
+            'freescout-mailbox' => [
+                'class' => FreeScoutMailbox::class,
+                'label' => 'FreeScout Mailbox',
+                'filters' => [],
+                'searchable' => ['name', 'email'],
+                'dates' => ['last_synced_at'],
+                'belongsTo' => ['user', 'lifeArea'],
+                'hasTenant' => true,
             ],
         ];
     }

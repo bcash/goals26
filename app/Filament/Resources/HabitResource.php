@@ -6,28 +6,37 @@ use App\Filament\Resources\HabitResource\Pages;
 use App\Filament\Support\LifeAreaBadge;
 use App\Models\Habit;
 use App\Models\HabitLog;
-use Filament\Forms\Form;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, TextInput, Textarea, Select,
-    DatePicker, CheckboxList
-};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Actions\{EditAction, DeleteAction, Action};
+use Filament\Tables\Table;
 
 class HabitResource extends Resource
 {
     protected static ?string $model = Habit::class;
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-path';
-    protected static ?string $navigationGroup = 'Habits';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Habits';
+
     protected static ?string $navigationLabel = 'Habits';
+
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Habit Details')->schema([
                 Grid::make(2)->schema([
                     TextInput::make('title')
@@ -52,10 +61,10 @@ class HabitResource extends Resource
                 Grid::make(2)->schema([
                     Select::make('frequency')
                         ->options([
-                            'daily'    => 'Every Day',
+                            'daily' => 'Every Day',
                             'weekdays' => 'Weekdays Only',
-                            'weekly'   => 'Once a Week',
-                            'custom'   => 'Custom Days',
+                            'weekly' => 'Once a Week',
+                            'custom' => 'Custom Days',
                         ])
                         ->default('daily')
                         ->live()
@@ -64,10 +73,10 @@ class HabitResource extends Resource
                     Select::make('time_of_day')
                         ->label('Best Time of Day')
                         ->options([
-                            'morning'   => 'Morning',
+                            'morning' => 'Morning',
                             'afternoon' => 'Afternoon',
-                            'evening'   => 'Evening',
-                            'anytime'   => 'Anytime',
+                            'evening' => 'Evening',
+                            'anytime' => 'Anytime',
                         ])
                         ->default('anytime'),
                 ]),
@@ -110,11 +119,11 @@ class HabitResource extends Resource
                 TextColumn::make('lifeArea.name')->label('Area')->badge()->sortable(),
                 TextColumn::make('frequency')->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'daily'    => 'success',
+                        'daily' => 'success',
                         'weekdays' => 'info',
-                        'weekly'   => 'warning',
-                        'custom'   => 'gray',
-                        default    => 'gray',
+                        'weekly' => 'warning',
+                        'custom' => 'gray',
+                        default => 'gray',
                     }),
                 TextColumn::make('time_of_day')->label('Time')->badge()->color('gray'),
                 TextColumn::make('streak_current')
@@ -142,14 +151,13 @@ class HabitResource extends Resource
                     ->label('Log Today')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->status === 'active' && !$record->todayLog
+                    ->visible(fn ($record) => $record->status === 'active' && ! $record->todayLog
                     )
                     ->action(function ($record) {
                         HabitLog::create([
-                            'habit_id'    => $record->id,
+                            'habit_id' => $record->id,
                             'logged_date' => today(),
-                            'status'      => 'completed',
+                            'status' => 'completed',
                         ]);
                         if (class_exists(\App\Services\HabitStreakService::class)) {
                             app(\App\Services\HabitStreakService::class)->recalculate($record);
@@ -163,9 +171,9 @@ class HabitResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListHabits::route('/'),
+            'index' => Pages\ListHabits::route('/'),
             'create' => Pages\CreateHabit::route('/create'),
-            'edit'   => Pages\EditHabit::route('/{record}/edit'),
+            'edit' => Pages\EditHabit::route('/{record}/edit'),
         ];
     }
 }

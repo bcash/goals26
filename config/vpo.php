@@ -12,7 +12,7 @@ return [
     |
     */
 
-    'url' => env('VPO_MCP_URL', 'https://vpo.example.com/mcp'),
+    'url' => env('VPO_MCP_URL', 'https://vpo.alp1n3.com/api/mcp/vpo'),
 
     'key' => env('VPO_MCP_KEY'),
 

@@ -8,8 +8,10 @@ use App\Models\OpportunityPipeline;
 class OpportunityPipelineWidget extends BaseWidget
 {
     protected static ?int $sort = 8;
-    protected int | string | array $columnSpan = 1;
-    protected static string $view = 'filament.widgets.opportunity-pipeline-widget';
+
+    protected int|string|array $columnSpan = 1;
+
+    protected string $view = 'filament.widgets.opportunity-pipeline-widget';
 
     public function getViewData(): array
     {
@@ -44,9 +46,8 @@ class OpportunityPipelineWidget extends BaseWidget
 
         $staleHighValue = DeferredItem::whereNotIn('opportunity_type', ['none', 'personal-goal'])
             ->whereIn('status', ['someday', 'scheduled', 'in-review', 'promoted'])
-            ->where(fn ($q) =>
-                $q->whereNull('last_reviewed_at')
-                    ->orWhere('last_reviewed_at', '<', now()->subDays(30))
+            ->where(fn ($q) => $q->whereNull('last_reviewed_at')
+                ->orWhere('last_reviewed_at', '<', now()->subDays(30))
             )
             ->orderByDesc('estimated_value')
             ->limit(10)

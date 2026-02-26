@@ -33,8 +33,8 @@ class Project extends Model
     ];
 
     protected $casts = [
-        'due_date'     => 'date',
-        'budget_cents' => MoneyCast::class . ':budget_currency',
+        'due_date' => 'date',
+        'budget_cents' => MoneyCast::class.':budget_currency',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────
@@ -54,9 +54,9 @@ class Project extends Model
         return $this->hasMany(Task::class);
     }
 
-    public function clientMeetings(): HasMany
+    public function meetingNotes(): HasMany
     {
-        return $this->hasMany(ClientMeeting::class);
+        return $this->hasMany(MeetingNote::class);
     }
 
     public function budget(): HasOne

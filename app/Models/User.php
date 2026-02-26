@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -47,11 +48,11 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at'    => 'datetime',
-            'trial_ends_at'        => 'datetime',
+            'email_verified_at' => 'datetime',
+            'trial_ends_at' => 'datetime',
             'subscription_ends_at' => 'datetime',
-            'onboarding_complete'  => 'boolean',
-            'password'             => 'hashed',
+            'onboarding_complete' => 'boolean',
+            'password' => 'hashed',
         ];
     }
 
@@ -102,9 +103,9 @@ class User extends Authenticatable
         return $this->hasMany(AiInteraction::class);
     }
 
-    public function clientMeetings(): HasMany
+    public function meetingNotes(): HasMany
     {
-        return $this->hasMany(ClientMeeting::class);
+        return $this->hasMany(MeetingNote::class);
     }
 
     public function deferredItems(): HasMany
@@ -120,6 +121,46 @@ class User extends Authenticatable
     public function timeEntries(): HasMany
     {
         return $this->hasMany(TimeEntry::class);
+    }
+
+    public function granolaToken(): HasOne
+    {
+        return $this->hasOne(GranolaToken::class);
+    }
+
+    public function googleToken(): HasOne
+    {
+        return $this->hasOne(GoogleToken::class);
+    }
+
+    public function googleCalendarConfigs(): HasMany
+    {
+        return $this->hasMany(GoogleCalendarConfig::class);
+    }
+
+    public function calendarEvents(): HasMany
+    {
+        return $this->hasMany(CalendarEvent::class);
+    }
+
+    public function freescoutMailboxes(): HasMany
+    {
+        return $this->hasMany(FreeScoutMailbox::class);
+    }
+
+    public function emailContacts(): HasMany
+    {
+        return $this->hasMany(EmailContact::class);
+    }
+
+    public function emailConversations(): HasMany
+    {
+        return $this->hasMany(EmailConversation::class);
+    }
+
+    public function conversationNotes(): HasMany
+    {
+        return $this->hasMany(ConversationNote::class);
     }
 
     // ── Subscription Helpers ──────────────────────────────────────────
@@ -138,5 +179,19 @@ class User extends Authenticatable
                 $this->subscription_ends_at &&
                 $this->subscription_ends_at->isFuture()
             ));
+    }
+
+    // ── Integration Helpers ─────────────────────────────────────────
+
+    public function hasGranolaConnection(): bool
+    {
+        return $this->granolaToken !== null
+            && ! $this->granolaToken->isExpired();
+    }
+
+    public function hasGoogleConnection(): bool
+    {
+        return $this->googleToken !== null
+            && ! $this->googleToken->isExpired();
     }
 }

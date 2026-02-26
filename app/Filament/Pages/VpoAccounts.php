@@ -7,9 +7,9 @@ use Filament\Pages\Page;
 
 class VpoAccounts extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-building-office';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $navigationGroup = 'Clients & Pipeline';
+    protected static string|\UnitEnum|null $navigationGroup = 'Clients & Pipeline';
 
     protected static ?string $navigationLabel = 'VPO Accounts';
 
@@ -17,7 +17,7 @@ class VpoAccounts extends Page
 
     protected static ?int $navigationSort = 15;
 
-    protected static string $view = 'filament.pages.vpo-accounts';
+    protected string $view = 'filament.pages.vpo-accounts';
 
     public string $search = '';
 

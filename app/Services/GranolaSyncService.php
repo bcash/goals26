@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\ClientMeeting;
+use App\Models\MeetingNote;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -20,29 +20,27 @@ class GranolaSyncService
      * Finds meetings not yet imported, downloads notes + transcript,
      * and runs intelligence extraction.
      *
-     * @param User $user The user to sync meetings for
-     * @param int $days Number of days back to search
-     * @return Collection Collection of synced ClientMeeting records
+     * @param  User  $user  The user to sync meetings for
+     * @param  int  $days  Number of days back to search
+     * @return Collection Collection of synced MeetingNote records
      */
     public function syncRecent(User $user, int $days = 7): Collection
     {
         $synced = collect();
 
         try {
-            $results = $this->granola->searchMeetings([
-                'limit' => 25,
-            ]);
+            $results = $this->granola->listMeetings($user, 25);
 
             $meetings = $results['meetings'] ?? $results;
 
-            if (!is_array($meetings)) {
+            if (! is_array($meetings)) {
                 return $synced;
             }
 
             foreach ($meetings as $gMeeting) {
                 $granId = $gMeeting['id'] ?? $gMeeting['meeting_id'] ?? null;
 
-                if (!$granId) {
+                if (! $granId) {
                     continue;
                 }
 
@@ -56,7 +54,7 @@ class GranolaSyncService
                 }
 
                 // Skip if already synced
-                if (ClientMeeting::where('granola_meeting_id', $granId)->exists()) {
+                if (MeetingNote::where('granola_meeting_id', $granId)->exists()) {
                     continue;
                 }
 
@@ -64,11 +62,11 @@ class GranolaSyncService
                     $imported = $this->importMeeting($user, $gMeeting);
                     $synced->push($imported);
                 } catch (\Exception $e) {
-                    Log::warning("Failed to import Granola meeting {$granId}: " . $e->getMessage());
+                    Log::warning("Failed to import Granola meeting {$granId}: ".$e->getMessage());
                 }
             }
         } catch (\Exception $e) {
-            Log::error('Granola sync failed: ' . $e->getMessage());
+            Log::error('Granola sync failed: '.$e->getMessage());
         }
 
         return $synced;
@@ -77,7 +75,7 @@ class GranolaSyncService
     /**
      * Import a single meeting from Granola data.
      */
-    public function importMeeting(User $user, array $granolaMeeting): ClientMeeting
+    public function importMeeting(User $user, array $granolaMeeting): MeetingNote
     {
         $granId = $granolaMeeting['id'] ?? $granolaMeeting['meeting_id'] ?? '';
         $title = $granolaMeeting['title'] ?? 'Untitled Meeting';
@@ -87,15 +85,15 @@ class GranolaSyncService
         $attendees = $granolaMeeting['attendees'] ?? [];
 
         // Fetch structured notes and transcript from Granola
-        $notes = $this->granola->downloadNote($granId);
-        $transcript = $this->granola->downloadTranscript($granId);
+        $meetingDetails = $this->granola->getMeeting($user, $granId);
+        $transcript = $this->granola->getMeetingTranscript($user, $granId);
 
         // Format the raw data
-        $formattedNotes = $notes ? $this->formatNotes($notes) : null;
+        $formattedNotes = $meetingDetails ? $this->formatNotes($meetingDetails) : null;
         $formattedTranscript = $transcript ? $this->formatTranscript($transcript) : null;
 
         // Create or update local meeting record
-        $meeting = ClientMeeting::updateOrCreate(
+        $meeting = MeetingNote::updateOrCreate(
             ['granola_meeting_id' => $granId],
             [
                 'user_id' => $user->id,
@@ -107,7 +105,7 @@ class GranolaSyncService
                 'source' => 'granola',
                 'transcript' => $formattedTranscript,
                 'summary' => $formattedNotes,
-                'transcription_status' => 'received',
+                'transcription_status' => 'pending',
                 'transcript_received_at' => now(),
             ]
         );
@@ -123,23 +121,23 @@ class GranolaSyncService
     /**
      * Re-sync an existing meeting (e.g. notes were updated in Granola).
      */
-    public function resyncMeeting(ClientMeeting $meeting): void
+    public function resyncMeeting(User $user, MeetingNote $meeting): void
     {
-        if (!$meeting->granola_meeting_id) {
+        if (! $meeting->granola_meeting_id) {
             throw new \InvalidArgumentException('Meeting has no Granola ID -- cannot resync.');
         }
 
         // Re-fetch from Granola
-        $notes = $this->granola->downloadNote($meeting->granola_meeting_id);
-        $transcript = $this->granola->downloadTranscript($meeting->granola_meeting_id);
+        $meetingDetails = $this->granola->getMeeting($user, $meeting->granola_meeting_id);
+        $transcript = $this->granola->getMeetingTranscript($user, $meeting->granola_meeting_id);
 
-        $formattedNotes = $notes ? $this->formatNotes($notes) : $meeting->summary;
+        $formattedNotes = $meetingDetails ? $this->formatNotes($meetingDetails) : $meeting->summary;
         $formattedTranscript = $transcript ? $this->formatTranscript($transcript) : $meeting->transcript;
 
         $meeting->update([
             'transcript' => $formattedTranscript,
             'summary' => $formattedNotes,
-            'transcription_status' => 'received',
+            'transcription_status' => 'pending',
             'transcript_received_at' => now(),
         ]);
 
@@ -161,7 +159,7 @@ class GranolaSyncService
         if (is_array($decoded)) {
             $segments = $decoded['segments'] ?? $decoded;
 
-            if (!empty($segments) && isset($segments[0]['speaker'])) {
+            if (! empty($segments) && isset($segments[0]['speaker'])) {
                 return collect($segments)
                     ->map(fn ($seg) => "[{$seg['speaker']}] {$seg['text']}")
                     ->join("\n");
@@ -173,25 +171,58 @@ class GranolaSyncService
     }
 
     /**
-     * Format raw meeting notes into a readable format.
-     * Handles both string input and potential pre-formatted data.
+     * Format meeting details/notes into a readable format.
+     * Handles Granola's XML-like response that contains <summary> blocks.
+     *
+     * @param  array|string  $raw  Raw meeting details
      */
-    public function formatNotes(string $raw): string
+    public function formatNotes(array|string $raw): string
     {
-        // If it's JSON, try to parse it as structured notes
-        $decoded = json_decode($raw, true);
-
-        if (is_array($decoded)) {
-            $panels = $decoded['panels'] ?? $decoded['sections'] ?? [];
-
-            if (!empty($panels) && isset($panels[0]['title'])) {
-                return collect($panels)
-                    ->map(fn ($panel) => "## {$panel['title']}\n{$panel['content']}")
-                    ->join("\n\n");
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+            if (! is_array($decoded)) {
+                return $this->extractSummaryFromXml($raw);
             }
+            $raw = $decoded;
         }
 
-        // Already formatted or plain text -- return as-is
-        return trim($raw);
+        // Granola getMeeting returns ['text' => '<meetings_data>...<summary>...</summary>...']
+        if (isset($raw['text'])) {
+            return $this->extractSummaryFromXml($raw['text']);
+        }
+
+        // Extract panels/sections from structured array data
+        $panels = $raw['panels'] ?? $raw['sections'] ?? [];
+        if (! empty($panels) && isset($panels[0]['title'])) {
+            return collect($panels)
+                ->map(fn ($panel) => "## {$panel['title']}\n{$panel['content']}")
+                ->join("\n\n");
+        }
+
+        if (isset($raw['content'])) {
+            return trim($raw['content']);
+        }
+
+        if (isset($raw['notes'])) {
+            return is_string($raw['notes']) ? trim($raw['notes']) : json_encode($raw['notes']);
+        }
+
+        return json_encode($raw);
+    }
+
+    /**
+     * Extract the <summary> block from Granola's XML-like meeting text.
+     * Falls back to the full text if no <summary> is found.
+     */
+    private function extractSummaryFromXml(string $text): string
+    {
+        if (preg_match('/<summary>\s*(.*?)\s*<\/summary>/s', $text, $match)) {
+            return trim($match[1]);
+        }
+
+        // Strip XML tags and return as plain text
+        $cleaned = preg_replace('/<[^>]+>/', '', $text);
+
+        return trim($cleaned);
     }
 }

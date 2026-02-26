@@ -8,9 +8,9 @@ class VpoStatusWidget extends BaseWidget
 {
     protected static ?int $sort = 10;
 
-    protected int | string | array $columnSpan = 1;
+    protected int|string|array $columnSpan = 1;
 
-    protected static string $view = 'filament.widgets.vpo-status-widget';
+    protected string $view = 'filament.widgets.vpo-status-widget';
 
     public static function canView(): bool
     {

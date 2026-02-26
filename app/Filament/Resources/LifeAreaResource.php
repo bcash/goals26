@@ -4,25 +4,36 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LifeAreaResource\Pages;
 use App\Models\LifeArea;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\ColorColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Forms\Components\{Section, Grid, TextInput, Textarea, ColorPicker};
-use Filament\Tables\Columns\{TextColumn, ColorColumn};
-use Filament\Tables\Actions\{EditAction, DeleteAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
 
 class LifeAreaResource extends Resource
 {
     protected static ?string $model = LifeArea::class;
-    protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
-    protected static ?string $navigationGroup = 'Settings';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
+
     protected static ?string $navigationLabel = 'Life Areas';
+
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Life Area')->schema([
                 Grid::make(2)->schema([
                     TextInput::make('name')
@@ -93,9 +104,9 @@ class LifeAreaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListLifeAreas::route('/'),
+            'index' => Pages\ListLifeAreas::route('/'),
             'create' => Pages\CreateLifeArea::route('/create'),
-            'edit'   => Pages\EditLifeArea::route('/{record}/edit'),
+            'edit' => Pages\EditLifeArea::route('/{record}/edit'),
         ];
     }
 }

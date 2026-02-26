@@ -4,28 +4,36 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProjectBudgetResource\Pages;
 use App\Models\ProjectBudget;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, TextInput, Textarea, Select, Placeholder
-};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Actions\{EditAction, DeleteAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
+use Filament\Tables\Table;
 
 class ProjectBudgetResource extends Resource
 {
     protected static ?string $model = ProjectBudget::class;
-    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
-    protected static ?string $navigationGroup = 'Goals & Projects';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Goals & Projects';
+
     protected static ?string $navigationLabel = 'Budgets';
+
     protected static ?int $navigationSort = 9;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Budget Setup')->schema([
                 Grid::make(2)->schema([
                     Select::make('project_id')
@@ -37,8 +45,8 @@ class ProjectBudgetResource extends Resource
 
                     Select::make('budget_type')
                         ->options([
-                            'fixed'    => 'Fixed Price',
-                            'hourly'   => 'Hourly',
+                            'fixed' => 'Fixed Price',
+                            'hourly' => 'Hourly',
                             'retainer' => 'Retainer',
                         ])
                         ->live()
@@ -121,10 +129,10 @@ class ProjectBudgetResource extends Resource
                     ->label('Type')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'fixed'    => 'info',
-                        'hourly'   => 'warning',
+                        'fixed' => 'info',
+                        'hourly' => 'warning',
                         'retainer' => 'success',
-                        default    => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('budget_total')
@@ -139,11 +147,11 @@ class ProjectBudgetResource extends Resource
 
                 TextColumn::make('burn_rate_percent')
                     ->label('Burn %')
-                    ->state(fn ($record) => $record->percentUsed() . '%')
+                    ->state(fn ($record) => $record->percentUsed().'%')
                     ->color(fn ($record) => match (true) {
-                        $record->isOverBudget()  => 'danger',
-                        $record->isNearAlert()   => 'warning',
-                        default                  => 'success',
+                        $record->isOverBudget() => 'danger',
+                        $record->isNearAlert() => 'warning',
+                        default => 'success',
                     })
                     ->alignCenter(),
 
@@ -152,8 +160,8 @@ class ProjectBudgetResource extends Resource
             ->filters([
                 SelectFilter::make('budget_type')
                     ->options([
-                        'fixed'    => 'Fixed Price',
-                        'hourly'   => 'Hourly',
+                        'fixed' => 'Fixed Price',
+                        'hourly' => 'Hourly',
                         'retainer' => 'Retainer',
                     ]),
 
@@ -170,9 +178,9 @@ class ProjectBudgetResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListProjectBudgets::route('/'),
+            'index' => Pages\ListProjectBudgets::route('/'),
             'create' => Pages\CreateProjectBudget::route('/create'),
-            'edit'   => Pages\EditProjectBudget::route('/{record}/edit'),
+            'edit' => Pages\EditProjectBudget::route('/{record}/edit'),
         ];
     }
 }

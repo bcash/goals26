@@ -7,7 +7,6 @@ use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Money\Money;
 
 class CostEntry extends Model
 {
@@ -17,7 +16,7 @@ class CostEntry extends Model
         'user_id',
         'project_id',
         'task_id',
-        'client_meeting_id',
+        'meeting_note_id',
         'description',
         'category',
         'amount_cents',
@@ -28,9 +27,9 @@ class CostEntry extends Model
     ];
 
     protected $casts = [
-        'amount_cents' => MoneyCast::class . ':currency',
-        'billable'     => 'boolean',
-        'logged_date'  => 'date',
+        'amount_cents' => MoneyCast::class.':currency',
+        'billable' => 'boolean',
+        'logged_date' => 'date',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────
@@ -45,9 +44,9 @@ class CostEntry extends Model
         return $this->belongsTo(Task::class);
     }
 
-    public function clientMeeting(): BelongsTo
+    public function meetingNote(): BelongsTo
     {
-        return $this->belongsTo(ClientMeeting::class);
+        return $this->belongsTo(MeetingNote::class, 'meeting_note_id');
     }
 
     // ── Helpers ───────────────────────────────────────────────────────

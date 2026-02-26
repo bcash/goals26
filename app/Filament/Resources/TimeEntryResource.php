@@ -4,28 +4,39 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TimeEntryResource\Pages;
 use App\Models\TimeEntry;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, TextInput, Select, DatePicker, Toggle
-};
-use Filament\Tables\Columns\{TextColumn, IconColumn};
-use Filament\Tables\Filters\{SelectFilter, TernaryFilter};
-use Filament\Tables\Actions\{EditAction, DeleteAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
 
 class TimeEntryResource extends Resource
 {
     protected static ?string $model = TimeEntry::class;
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
-    protected static ?string $navigationGroup = 'Goals & Projects';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Goals & Projects';
+
     protected static ?string $navigationLabel = 'Time Entries';
+
     protected static ?int $navigationSort = 10;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Time Entry')->schema([
                 Grid::make(2)->schema([
                     Select::make('task_id')
@@ -142,9 +153,9 @@ class TimeEntryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTimeEntries::route('/'),
+            'index' => Pages\ListTimeEntries::route('/'),
             'create' => Pages\CreateTimeEntry::route('/create'),
-            'edit'   => Pages\EditTimeEntry::route('/{record}/edit'),
+            'edit' => Pages\EditTimeEntry::route('/{record}/edit'),
         ];
     }
 }

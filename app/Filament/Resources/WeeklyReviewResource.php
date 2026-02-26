@@ -4,24 +4,34 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\WeeklyReviewResource\Pages;
 use App\Models\WeeklyReview;
-use Filament\Forms\Form;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{Section, Grid, Textarea, Select, DatePicker, Placeholder};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\{EditAction, ViewAction};
+use Filament\Tables\Table;
 
 class WeeklyReviewResource extends Resource
 {
     protected static ?string $model = WeeklyReview::class;
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-    protected static ?string $navigationGroup = 'Journal';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Journal';
+
     protected static ?string $navigationLabel = 'Weekly Reviews';
+
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Week of')->schema([
                 DatePicker::make('week_start_date')
                     ->label('Week Starting (Monday)')
@@ -54,15 +64,14 @@ class WeeklyReviewResource extends Resource
                     collect([
                         'creative' => 'Creative',
                         'business' => 'Business',
-                        'health'   => 'Health',
-                        'family'   => 'Family',
-                        'growth'   => 'Growth',
-                        'finance'  => 'Finance',
-                    ])->map(fn ($label, $key) =>
-                        Select::make("outcomes_met.{$key}")
-                            ->label($label)
-                            ->options([1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5'])
-                            ->nullable()
+                        'health' => 'Health',
+                        'family' => 'Family',
+                        'growth' => 'Growth',
+                        'finance' => 'Finance',
+                    ])->map(fn ($label, $key) => Select::make("outcomes_met.{$key}")
+                        ->label($label)
+                        ->options([1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5'])
+                        ->nullable()
                     )->values()->toArray()
                 ),
 
@@ -106,10 +115,10 @@ class WeeklyReviewResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListWeeklyReviews::route('/'),
+            'index' => Pages\ListWeeklyReviews::route('/'),
             'create' => Pages\CreateWeeklyReview::route('/create'),
-            'view'   => Pages\ViewWeeklyReview::route('/{record}'),
-            'edit'   => Pages\EditWeeklyReview::route('/{record}/edit'),
+            'view' => Pages\ViewWeeklyReview::route('/{record}'),
+            'edit' => Pages\EditWeeklyReview::route('/{record}/edit'),
         ];
     }
 }

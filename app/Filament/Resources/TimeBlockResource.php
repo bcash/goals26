@@ -4,26 +4,38 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TimeBlockResource\Pages;
 use App\Models\TimeBlock;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{Grid, TextInput, Textarea, Select, TimePicker, ColorPicker};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\{EditAction, DeleteAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
+use Filament\Tables\Table;
 
 class TimeBlockResource extends Resource
 {
     protected static ?string $model = TimeBlock::class;
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
-    protected static ?string $navigationGroup = 'Today';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Today';
+
     protected static ?string $navigationLabel = 'Time Blocks';
+
     protected static ?int $navigationSort = 2;
+
     protected static bool $shouldRegisterNavigation = false;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Select::make('daily_plan_id')
                 ->label('Daily Plan')
                 ->relationship('dailyPlan', 'plan_date')
@@ -36,10 +48,10 @@ class TimeBlockResource extends Resource
                 Select::make('block_type')
                     ->options([
                         'deep-work' => 'Deep Work',
-                        'admin'     => 'Admin',
-                        'meeting'   => 'Meeting',
-                        'personal'  => 'Personal',
-                        'buffer'    => 'Buffer',
+                        'admin' => 'Admin',
+                        'meeting' => 'Meeting',
+                        'personal' => 'Personal',
+                        'buffer' => 'Buffer',
                     ])
                     ->default('deep-work')
                     ->required(),
@@ -81,11 +93,11 @@ class TimeBlockResource extends Resource
                 TextColumn::make('block_type')->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'deep-work' => 'success',
-                        'admin'     => 'gray',
-                        'meeting'   => 'warning',
-                        'personal'  => 'info',
-                        'buffer'    => 'gray',
-                        default     => 'gray',
+                        'admin' => 'gray',
+                        'meeting' => 'warning',
+                        'personal' => 'info',
+                        'buffer' => 'gray',
+                        default => 'gray',
                     }),
                 TextColumn::make('task.title')->label('Task')->limit(30)->placeholder('-'),
             ])
@@ -97,9 +109,9 @@ class TimeBlockResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTimeBlocks::route('/'),
+            'index' => Pages\ListTimeBlocks::route('/'),
             'create' => Pages\CreateTimeBlock::route('/create'),
-            'edit'   => Pages\EditTimeBlock::route('/{record}/edit'),
+            'edit' => Pages\EditTimeBlock::route('/{record}/edit'),
         ];
     }
 }

@@ -5,27 +5,35 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\DailyPlanResource\Pages;
 use App\Filament\Resources\DailyPlanResource\RelationManagers;
 use App\Models\DailyPlan;
-use Filament\Forms\Form;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, TextInput, Textarea, Select,
-    DatePicker, Placeholder
-};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\{EditAction, ViewAction};
+use Filament\Tables\Table;
 
 class DailyPlanResource extends Resource
 {
     protected static ?string $model = DailyPlan::class;
-    protected static ?string $navigationIcon = 'heroicon-o-sun';
-    protected static ?string $navigationGroup = 'Today';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-sun';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Today';
+
     protected static ?string $navigationLabel = 'Daily Plans';
+
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Morning Session')->schema([
                 Grid::make(2)->schema([
                     DatePicker::make('plan_date')
@@ -102,8 +110,8 @@ class DailyPlanResource extends Resource
 
                 Select::make('status')
                     ->options([
-                        'draft'    => 'Draft',
-                        'active'   => 'Active',
+                        'draft' => 'Draft',
+                        'active' => 'Active',
                         'reviewed' => 'Reviewed',
                     ])
                     ->default('draft'),
@@ -133,10 +141,10 @@ class DailyPlanResource extends Resource
 
                 TextColumn::make('status')->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'draft'    => 'gray',
-                        'active'   => 'warning',
+                        'draft' => 'gray',
+                        'active' => 'warning',
                         'reviewed' => 'success',
-                        default    => 'gray',
+                        default => 'gray',
                     }),
             ])
             ->defaultSort('plan_date', 'desc')
@@ -154,10 +162,10 @@ class DailyPlanResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListDailyPlans::route('/'),
+            'index' => Pages\ListDailyPlans::route('/'),
             'create' => Pages\CreateDailyPlan::route('/create'),
-            'view'   => Pages\ViewDailyPlan::route('/{record}'),
-            'edit'   => Pages\EditDailyPlan::route('/{record}/edit'),
+            'view' => Pages\ViewDailyPlan::route('/{record}'),
+            'edit' => Pages\EditDailyPlan::route('/{record}/edit'),
         ];
     }
 }

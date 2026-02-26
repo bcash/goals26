@@ -8,12 +8,14 @@ use App\Models\Task;
 class DoneDeliveredWidget extends BaseWidget
 {
     protected static ?int $sort = 8;
-    protected int | string | array $columnSpan = 1;
-    protected static string $view = 'filament.widgets.done-delivered-widget';
+
+    protected int|string|array $columnSpan = 1;
+
+    protected string $view = 'filament.widgets.done-delivered-widget';
 
     public function getViewData(): array
     {
-        $recentDoneItems = MeetingDoneItem::with('meeting')
+        $recentDoneItems = MeetingDoneItem::with('meetingNote')
             ->latest()
             ->limit(5)
             ->get();

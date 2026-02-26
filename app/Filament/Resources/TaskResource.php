@@ -6,31 +6,45 @@ use App\Filament\Resources\ProjectResource\RelationManagers\CostEntriesRelationM
 use App\Filament\Resources\TaskResource\Pages;
 use App\Filament\Support\LifeAreaBadge;
 use App\Models\Task;
-use Filament\Forms\Form;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, TextInput, Textarea, Select,
-    DatePicker, Toggle
-};
-use Filament\Tables\Columns\{TextColumn, IconColumn};
-use Filament\Tables\Filters\{SelectFilter, Filter, TernaryFilter};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Actions\{EditAction, DeleteAction, Action, BulkAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class TaskResource extends Resource
 {
     protected static ?string $model = Task::class;
-    protected static ?string $navigationIcon = 'heroicon-o-check-circle';
-    protected static ?string $navigationGroup = 'Goals & Projects';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-check-circle';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Goals & Projects';
+
     protected static ?string $navigationLabel = 'Tasks';
+
     protected static ?int $navigationSort = 4;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Task')->schema([
                 TextInput::make('title')
                     ->required()
@@ -114,19 +128,19 @@ class TaskResource extends Resource
                 Grid::make(2)->schema([
                     Select::make('status')
                         ->options([
-                            'todo'        => 'To Do',
+                            'todo' => 'To Do',
                             'in-progress' => 'In Progress',
-                            'done'        => 'Done',
-                            'deferred'    => 'Deferred',
+                            'done' => 'Done',
+                            'deferred' => 'Deferred',
                         ])
                         ->default('todo')
                         ->required(),
 
                     Select::make('priority')
                         ->options([
-                            'low'      => 'Low',
-                            'medium'   => 'Medium',
-                            'high'     => 'High',
+                            'low' => 'Low',
+                            'medium' => 'Medium',
+                            'high' => 'High',
                             'critical' => 'Critical',
                         ])
                         ->default('medium')
@@ -168,21 +182,21 @@ class TaskResource extends Resource
                 TextColumn::make('priority')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'low'      => 'gray',
-                        'medium'   => 'info',
-                        'high'     => 'warning',
+                        'low' => 'gray',
+                        'medium' => 'info',
+                        'high' => 'warning',
                         'critical' => 'danger',
-                        default    => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'todo'        => 'gray',
+                        'todo' => 'gray',
                         'in-progress' => 'warning',
-                        'done'        => 'success',
-                        'deferred'    => 'info',
-                        default       => 'gray',
+                        'done' => 'success',
+                        'deferred' => 'info',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('scheduled_date')
@@ -194,8 +208,7 @@ class TaskResource extends Resource
                     ->label('Due')
                     ->date('M j')
                     ->sortable()
-                    ->color(fn ($record) =>
-                        $record->due_date?->isPast() && $record->status !== 'done'
+                    ->color(fn ($record) => $record->due_date?->isPast() && $record->status !== 'done'
                             ? 'danger'
                             : 'gray'
                     ),
@@ -228,9 +241,8 @@ class TaskResource extends Resource
 
                 Filter::make('overdue')
                     ->label('Overdue')
-                    ->query(fn (Builder $query) =>
-                        $query->whereDate('due_date', '<', today())
-                              ->whereNotIn('status', ['done'])
+                    ->query(fn (Builder $query) => $query->whereDate('due_date', '<', today())
+                        ->whereNotIn('status', ['done'])
                     ),
 
                 SelectFilter::make('project_id')
@@ -272,9 +284,9 @@ class TaskResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTasks::route('/'),
+            'index' => Pages\ListTasks::route('/'),
             'create' => Pages\CreateTask::route('/create'),
-            'edit'   => Pages\EditTask::route('/{record}/edit'),
+            'edit' => Pages\EditTask::route('/{record}/edit'),
         ];
     }
 }

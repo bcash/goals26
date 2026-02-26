@@ -2,22 +2,25 @@
 
 namespace App\Filament\Resources\GoalResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Components\{TextInput, Grid, Select, DatePicker};
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\{EditAction, DeleteAction, CreateAction};
+use Filament\Tables\Table;
 
 class MilestonesRelationManager extends RelationManager
 {
     protected static string $relationship = 'milestones';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             TextInput::make('title')->required()->columnSpanFull(),
             Grid::make(2)->schema([
                 DatePicker::make('due_date')->nullable(),

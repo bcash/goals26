@@ -3,7 +3,7 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Services\OnboardingService;
-use Filament\Pages\Auth\Register as BaseRegister;
+use Filament\Auth\Pages\Register as BaseRegister;
 use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Model;
 

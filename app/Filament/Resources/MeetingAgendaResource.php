@@ -5,29 +5,40 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MeetingAgendaResource\Pages;
 use App\Filament\Resources\MeetingAgendaResource\RelationManagers;
 use App\Models\MeetingAgenda;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{
-    Section, Grid, TextInput, Textarea, Select,
-    DateTimePicker, Placeholder, TagsInput
-};
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Actions\{EditAction, DeleteAction, ViewAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction};
+use Filament\Tables\Table;
 
 class MeetingAgendaResource extends Resource
 {
     protected static ?string $model = MeetingAgenda::class;
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationGroup = 'Goals & Projects';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Goals & Projects';
+
     protected static ?string $navigationLabel = 'Meeting Agendas';
+
     protected static ?int $navigationSort = 6;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Section::make('Meeting Details')->schema([
                 TextInput::make('title')->required()->columnSpanFull(),
 
@@ -36,7 +47,7 @@ class MeetingAgendaResource extends Resource
                         ->label('Meeting With')
                         ->options([
                             'external' => 'External Client',
-                            'self'     => 'Myself',
+                            'self' => 'Myself',
                         ])
                         ->default('external')
                         ->live(),
@@ -59,11 +70,11 @@ class MeetingAgendaResource extends Resource
 
                     Select::make('status')
                         ->options([
-                            'draft'       => 'Draft',
-                            'ready'       => 'Ready to Send',
+                            'draft' => 'Draft',
+                            'ready' => 'Ready to Send',
                             'in-progress' => 'In Progress',
-                            'complete'    => 'Complete',
-                            'cancelled'   => 'Cancelled',
+                            'complete' => 'Complete',
+                            'cancelled' => 'Cancelled',
                         ])
                         ->default('draft'),
                 ]),
@@ -95,8 +106,7 @@ class MeetingAgendaResource extends Resource
             Section::make('AI Suggested Topics')->schema([
                 Placeholder::make('ai_suggested_topics')
                     ->label('')
-                    ->content(fn ($record) =>
-                        $record?->ai_suggested_topics
+                    ->content(fn ($record) => $record?->ai_suggested_topics
                             ? collect($record->ai_suggested_topics)
                                 ->map(fn ($t) => "* {$t['title']} ({$t['time_allocation_minutes']}min) - {$t['description']}")
                                 ->join("\n")
@@ -129,12 +139,12 @@ class MeetingAgendaResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'draft'       => 'gray',
-                        'ready'       => 'info',
+                        'draft' => 'gray',
+                        'ready' => 'info',
                         'in-progress' => 'warning',
-                        'complete'    => 'success',
-                        'cancelled'   => 'danger',
-                        default       => 'gray',
+                        'complete' => 'success',
+                        'cancelled' => 'danger',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('items_count')
@@ -163,10 +173,10 @@ class MeetingAgendaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListMeetingAgendas::route('/'),
+            'index' => Pages\ListMeetingAgendas::route('/'),
             'create' => Pages\CreateMeetingAgenda::route('/create'),
-            'view'   => Pages\ViewMeetingAgenda::route('/{record}'),
-            'edit'   => Pages\EditMeetingAgenda::route('/{record}/edit'),
+            'view' => Pages\ViewMeetingAgenda::route('/{record}'),
+            'edit' => Pages\EditMeetingAgenda::route('/{record}/edit'),
         ];
     }
 }

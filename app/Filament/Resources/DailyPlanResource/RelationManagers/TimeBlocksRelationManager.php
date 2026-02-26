@@ -2,32 +2,37 @@
 
 namespace App\Filament\Resources\DailyPlanResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Components\{TextInput, Grid, Select, Textarea, TimePicker, ColorPicker};
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\{EditAction, DeleteAction, CreateAction};
+use Filament\Tables\Table;
 
 class TimeBlocksRelationManager extends RelationManager
 {
     protected static string $relationship = 'timeBlocks';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             TextInput::make('title')->required()->columnSpanFull(),
 
             Grid::make(2)->schema([
                 Select::make('block_type')
                     ->options([
                         'deep-work' => 'Deep Work',
-                        'admin'     => 'Admin',
-                        'meeting'   => 'Meeting',
-                        'personal'  => 'Personal',
-                        'buffer'    => 'Buffer',
+                        'admin' => 'Admin',
+                        'meeting' => 'Meeting',
+                        'personal' => 'Personal',
+                        'buffer' => 'Buffer',
                     ])
                     ->default('deep-work')
                     ->required(),
@@ -69,11 +74,11 @@ class TimeBlocksRelationManager extends RelationManager
                 TextColumn::make('block_type')->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'deep-work' => 'success',
-                        'admin'     => 'gray',
-                        'meeting'   => 'warning',
-                        'personal'  => 'info',
-                        'buffer'    => 'gray',
-                        default     => 'gray',
+                        'admin' => 'gray',
+                        'meeting' => 'warning',
+                        'personal' => 'info',
+                        'buffer' => 'gray',
+                        default => 'gray',
                     }),
             ])
             ->defaultSort('start_time')

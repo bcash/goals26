@@ -19,6 +19,7 @@ class DeferredItem extends Model
         'task_id',
         'project_id',
         'meeting_id',
+        'email_conversation_id',
         'scope_item_id',
         'title',
         'description',
@@ -44,11 +45,11 @@ class DeferredItem extends Model
     ];
 
     protected $casts = [
-        'deferred_on'           => 'date',
-        'revisit_date'          => 'date',
-        'last_reviewed_at'      => 'datetime',
+        'deferred_on' => 'date',
+        'revisit_date' => 'date',
+        'last_reviewed_at' => 'datetime',
         'resource_requirements' => 'json',
-        'resource_check_done'   => 'boolean',
+        'resource_check_done' => 'boolean',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────
@@ -63,9 +64,14 @@ class DeferredItem extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function meeting(): BelongsTo
+    public function meetingNote(): BelongsTo
     {
-        return $this->belongsTo(ClientMeeting::class, 'meeting_id');
+        return $this->belongsTo(MeetingNote::class, 'meeting_id');
+    }
+
+    public function emailConversation(): BelongsTo
+    {
+        return $this->belongsTo(EmailConversation::class);
     }
 
     public function scopeItem(): BelongsTo
@@ -81,7 +87,7 @@ class DeferredItem extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(DeferralReview::class, 'deferred_item_id')
-                    ->orderByDesc('reviewed_on');
+            ->orderByDesc('reviewed_on');
     }
 
     // ── Scopes ────────────────────────────────────────────────────────
@@ -90,20 +96,20 @@ class DeferredItem extends Model
     {
         return $query->where(function ($q) {
             $q->where('status', 'scheduled')
-              ->where('revisit_date', '<=', today());
+                ->where('revisit_date', '<=', today());
         })->orWhere(function ($q) {
             $q->where('status', 'someday')
-              ->where(function ($inner) {
-                  $inner->whereNull('last_reviewed_at')
+                ->where(function ($inner) {
+                    $inner->whereNull('last_reviewed_at')
                         ->orWhere('last_reviewed_at', '<=', now()->subDays(30));
-              });
+                });
         });
     }
 
     public function scopeHasCommercialValue(Builder $query): Builder
     {
         return $query->whereNotIn('opportunity_type', ['none', 'personal-goal'])
-                     ->whereIn('status', ['someday', 'scheduled', 'in-review', 'promoted']);
+            ->whereIn('status', ['someday', 'scheduled', 'in-review', 'promoted']);
     }
 
     public function scopeByStage(Builder $query, string $stage): Builder
@@ -115,7 +121,7 @@ class DeferredItem extends Model
 
     public function weightedValue(): float
     {
-        if (!$this->opportunity || !$this->estimated_value) {
+        if (! $this->opportunity || ! $this->estimated_value) {
             return 0;
         }
 
@@ -134,13 +140,13 @@ class DeferredItem extends Model
         $this->update(['status' => 'promoted', 'has_opportunity' => true]);
 
         return OpportunityPipeline::create([
-            'user_id'          => $this->user_id,
+            'user_id' => $this->user_id,
             'deferred_item_id' => $this->id,
-            'title'            => $this->title,
-            'description'      => $this->description,
-            'client_name'      => $this->client_name ?? '',
-            'estimated_value'  => $this->estimated_value,
-            'stage'            => 'identified',
+            'title' => $this->title,
+            'description' => $this->description,
+            'client_name' => $this->client_name ?? '',
+            'estimated_value' => $this->estimated_value,
+            'stage' => 'identified',
         ]);
     }
 }
