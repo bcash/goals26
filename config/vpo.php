@@ -4,22 +4,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | VPO MCP Server
+    | VPO REST API
     |--------------------------------------------------------------------------
     |
-    | Configuration for the VPO (Virtual Practice Office) MCP server.
-    | Solas Rún connects as a JSON-RPC 2.0 client over HTTPS.
+    | Configuration for the VPO (Virtual Practice Office) REST API.
+    | Solas Rún connects as a Sanctum-authenticated HTTP client.
     |
     */
 
-    'url' => env('VPO_MCP_URL', 'https://vpo.alp1n3.com/api/mcp/vpo'),
+    'base_url' => env('VPO_API_URL', 'https://vpo.alp1n3.com/api/v1'),
 
-    'key' => env('VPO_MCP_KEY'),
+    'token' => env('VPO_API_TOKEN'),
 
     'timeout' => 30,
-
-    // MCP session ID time-to-live in seconds (30 minutes)
-    'session_ttl' => 1800,
 
     // Data cache time-to-live in seconds (5 minutes)
     'cache_ttl' => 300,

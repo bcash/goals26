@@ -24,9 +24,9 @@
                                 {{ $account['name'] ?? 'Unknown' }}
                             </p>
                         </div>
-                        @if(isset($account['status']))
-                            <span class="text-xs text-gray-400 flex-shrink-0 ml-2 capitalize">
-                                {{ $account['status'] }}
+                        @if(! empty($account['industry']['name']) && $account['industry']['name'] !== 'Other')
+                            <span class="text-xs text-gray-400 flex-shrink-0 ml-2">
+                                {{ $account['industry']['name'] }}
                             </span>
                         @endif
                     </div>

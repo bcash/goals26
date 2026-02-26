@@ -25,13 +25,9 @@ class VpoAccounts extends Page
 
     public ?array $selectedAccount = null;
 
-    public array $contacts = [];
-
-    public array $projects = [];
+    public array $tasks = [];
 
     public array $invoices = [];
-
-    public array $tickets = [];
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -51,11 +47,7 @@ class VpoAccounts extends Page
     {
         $service = app(VpoService::class);
         $this->accounts = $service->searchAccounts($this->search, 25);
-        $this->selectedAccount = null;
-        $this->contacts = [];
-        $this->projects = [];
-        $this->invoices = [];
-        $this->tickets = [];
+        $this->clearSelection();
     }
 
     public function viewAccount(string $accountId): void
@@ -63,18 +55,14 @@ class VpoAccounts extends Page
         $service = app(VpoService::class);
 
         $this->selectedAccount = $service->getAccount($accountId);
-        $this->contacts = $service->getContacts($accountId);
-        $this->projects = $service->getProjects($accountId);
+        $this->tasks = $service->getTasks($accountId);
         $this->invoices = $service->getInvoices($accountId);
-        $this->tickets = $service->getTickets($accountId);
     }
 
     public function clearSelection(): void
     {
         $this->selectedAccount = null;
-        $this->contacts = [];
-        $this->projects = [];
+        $this->tasks = [];
         $this->invoices = [];
-        $this->tickets = [];
     }
 }

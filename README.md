@@ -219,7 +219,7 @@ tests/
 ## External Integrations
 
 - **Granola** — Meeting transcript sync via MCP client (`GranolaSyncService` / `GranolaMcpClient`)
-- **VPO (Virtual Practice Office)** — Account, contact, project, invoice, and ticket data via MCP client (`VpoService` / `VpoMcpClient`), configured in `config/vpo.php`
+- **VPO (Virtual Practice Office)** — Account, server, domain, website, task, and invoice data via REST API (`VpoService` / `VpoApiClient`), authenticated with Sanctum bearer tokens, configured in `config/vpo.php`
 - **AI** — Central orchestration via `AiService` with interaction logging to `AiInteraction` model. Currently uses simulated responses; designed for OpenAI/Anthropic API integration.
 
 ## Key Workflows
